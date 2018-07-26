@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.client;
 
-import io.netty.buffer.ByteBuf;
+import com.niftysoft.k8s.UnixTime;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -10,15 +10,9 @@ public class TimeClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        ByteBuf m = (ByteBuf) msg;
-
-        try {
-            long currentTimeMillis = (m.readUnsignedInt() - 220898800L) * 1000L;
-            System.out.println(new Date(currentTimeMillis));
-            ctx.close();
-        } finally {
-            m.release();
-        }
+        UnixTime m = (UnixTime) msg;
+        System.out.println(m);
+        ctx.close();
     }
 
     @Override

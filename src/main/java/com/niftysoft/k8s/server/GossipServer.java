@@ -27,7 +27,7 @@ public class GossipServer {
              .childHandler(new ChannelInitializer<SocketChannel>(){
                 @Override
                  public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new GossipServerHandler());
+                    ch.pipeline().addLast(new GossipServerHandler(), new TimeEncoder());
                 }
              })
              .option(ChannelOption.SO_BACKLOG, 128)

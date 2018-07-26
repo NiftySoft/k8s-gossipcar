@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.server;
 
-import io.netty.buffer.ByteBuf;
+import com.niftysoft.k8s.UnixTime;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -10,16 +10,8 @@ public class GossipServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(final ChannelHandlerContext ctx) {
-        final ByteBuf time = ctx.alloc().buffer(4);
-        time.writeInt((int) (System.currentTimeMillis() / 1000L + 220898800L));
-
-        final ChannelFuture f = ctx.writeAndFlush(time);
-        f.addListener(new ChannelFutureListener() {
-            public void operationComplete(ChannelFuture future) {
-                assert f == future;
-                ctx.close();
-            }
-        });
+        ChannelFuture f = ctx.writeAndFlush(new UnixTime());
+        f.addListener(ChannelFutureListener.CLOSE);
     }
 
     @Override
