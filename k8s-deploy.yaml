@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Service
+metadata:
+  name: gossip-sidecar
+  labels:
+    app: gossip-sidecar
+spec:
+  clusterIp: None
+  ports:
+    - port: 46747
+      name: gossip
+  selector:
+    app: gossip-sidecar
+---------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gossip-sidecar-deployment
+  labels:
+    app: gossip-sidecar
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gossip-sidecar
+  template:
+    metadata:
+      labels:
+        app: gossip-sidecar
+    spec:
+      containers:
+      - name: gossip-sidecar
+        image: k8s-gossip-sidecar:1.0.0
+        ports:
+        - containerPort: 80
