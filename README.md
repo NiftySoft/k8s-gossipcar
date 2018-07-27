@@ -4,6 +4,8 @@
 A lightweight Kubernetes sidecar for performing slow-sync on an in-memory key-value
 store.
 
+### But Why?
+
 Not all cluster data requires strong write consistency and high-availability. Sometimes you
 just want to sync information with peers without taxing cluster resources. This sidecar is
 built for those use-cases.
