@@ -2,6 +2,7 @@ package com.niftysoft.k8s.server;
 
 import com.niftysoft.k8s.client.SyncTask;
 import com.niftysoft.k8s.data.Config;
+import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -25,6 +26,8 @@ public class GossipServer {
 
     public void run() throws Exception {
         // TODO: Allow the number of boss and worker threads to be configurable.
+        VolatileStringStore myStore = new VolatileStringStore();
+
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -37,7 +40,7 @@ public class GossipServer {
                     // TODO: Enable sending object larger than 1 MB
                     ch.pipeline().addLast(new ObjectEncoder(),
                                           new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                          new GossipServerHandler());
+                                          new GossipServerHandler(myStore));
                 }
              })
              .option(ChannelOption.SO_BACKLOG, 128)
@@ -47,7 +50,7 @@ public class GossipServer {
             ChannelFuture f = b.bind(config.peerPort).sync();
 
             // TODO: Make delay and timing configurable.
-            f.channel().eventLoop().scheduleAtFixedRate(new SyncTask(config), 5, 1, TimeUnit.SECONDS);
+            f.channel().eventLoop().scheduleAtFixedRate(new SyncTask(config, myStore), 5, 1, TimeUnit.SECONDS);
 
             f.channel().closeFuture().sync();
         } finally {

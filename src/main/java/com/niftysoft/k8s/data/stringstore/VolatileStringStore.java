@@ -1,40 +1,31 @@
-package com.niftysoft.k8s.data;
+package com.niftysoft.k8s.data.stringstore;
+
+import com.niftysoft.k8s.data.HashUtil;
+import com.niftysoft.k8s.data.VersionedString;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
  * Streamlined map implementing a small subset of the Map interface. Maps Strings to Strings. Each value
- * is internally versioned. When put is called on a value, its version is incremented. When loadIfFresher is
+ * is internally versioned. When put is called on a value, its version is incremented. When mergeAllFresher is
  * called, only values with versions larger than the current version are updated.
  */
 public class VolatileStringStore implements Serializable {
 
     private static final long serialVersionUID = -5261239982290750103L;
 
-    private static VolatileStringStore SINGLETON;
-
     /**
-     *  Use a long keys internally to avoid sending unnecessary strings over the wire (KeySet).
+     *  Use a long keys internally to avoid sending unnecessary strings over the wire (KeySet). Package private to
+     *  enable
      */
-    private Map<Long, VersionedString> internalMap;
+    Map<Long, VersionedString> internalMap;
 
-    private long timestamp;
-
-    private VolatileStringStore() {
+    public VolatileStringStore() {
         internalMap = new HashMap<>();
-    }
-
-    /**
-     * @return VolatileStringStore singleton instance of the VolatileStringStore on this node.
-     */
-    public static VolatileStringStore getInstance() {
-        synchronized (SINGLETON) {
-            if (SINGLETON == null) SINGLETON = new VolatileStringStore();
-        }
-        return SINGLETON;
     }
 
     /**
@@ -42,30 +33,31 @@ public class VolatileStringStore implements Serializable {
      *
      * @param other
      */
-    public synchronized void loadIfFresher(VolatileStringStore other) {
+    public synchronized void mergeAllFresher(VolatileStringStore other) {
         for (Map.Entry<Long, VersionedString> entry : other.internalMap.entrySet()) {
             long key = entry.getKey();
             this.internalMap.merge(key, entry.getValue(), (VersionedString oldValue, VersionedString value) ->
-                    (value.version > oldValue.version) ? value : oldValue);
+                    (value.getVersion() > oldValue.getVersion()) ? value : oldValue);
         }
     }
 
     /**
      * This function is used to ensure that the same hash function is used in all places.
      */
-    private static final Function<String, Long> hasher = HashUtil::hash;
+    static final Function<String, Long> hasher = HashUtil::hash;
 
     /**
      * @param key String key
      * @return String value associated with the given key.
      */
     public String get(String key) {
-        return internalMap.get(hasher.apply(key)).value;
+        VersionedString str = internalMap.get(hasher.apply(key));
+        return (str == null) ? null : str.getValue();
     }
 
     /**
      * Put should only be called when a client updates the value. When receiving a payload from a peer,
-     * use loadIfFresher().
+     * use mergeAllFresher().
      *
      * @param key String key to use to retrieve value in future.
      * @param value String value to associate with key.
@@ -73,8 +65,19 @@ public class VolatileStringStore implements Serializable {
      */
     public synchronized String put(String key, String value) {
         return internalMap.merge(hasher.apply(key), new VersionedString(value), (oldValue, newValue) -> {
-            newValue.version = oldValue.version + 1;
+            newValue.setVersion(oldValue.getVersion() + 1);
             return newValue;
-        }).value;
+        }).getValue();
+    }
+
+    public int size() { return internalMap.size(); }
+    public boolean isEmpty() { return size() == 0; }
+
+    public Optional<Long> getVersion(String key) {
+        long hash = hasher.apply(key);
+        if (!internalMap.containsKey(hash))
+            return Optional.empty();
+
+        return Optional.of(internalMap.get(hash).getVersion());
     }
 }

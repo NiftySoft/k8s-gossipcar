@@ -1,14 +1,14 @@
-package com.niftysoft.k8s.server;
+package com.niftysoft.k8s.client;
 
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class SyncServerHandler extends ChannelInboundHandlerAdapter {
+public class SyncClientReadHandler extends ChannelInboundHandlerAdapter {
 
     private final VolatileStringStore myStore;
 
-    public SyncServerHandler(VolatileStringStore store) {
+    public SyncClientReadHandler(VolatileStringStore store) {
         this.myStore = store;
     }
 
@@ -19,8 +19,6 @@ public class SyncServerHandler extends ChannelInboundHandlerAdapter {
         VolatileStringStore otherStore = (VolatileStringStore)msg;
 
         myStore.mergeAllFresher(otherStore);
-
-        ctx.write(myStore);
     }
 
     @Override
@@ -28,6 +26,7 @@ public class SyncServerHandler extends ChannelInboundHandlerAdapter {
         ctx.flush();
     }
 
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();

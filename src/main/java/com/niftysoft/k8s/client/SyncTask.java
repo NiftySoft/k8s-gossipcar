@@ -1,26 +1,27 @@
 package com.niftysoft.k8s.client;
 
 import com.niftysoft.k8s.data.Config;
-import com.niftysoft.k8s.server.GossipServer;
+import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
+import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class SyncTask implements Runnable {
 
-    private int port;
-    private String hostname;
+    private final int port;
+    private final String hostname;
+    private final VolatileStringStore myStore;
 
-    public SyncTask(Config config) {
+    public SyncTask(Config config, VolatileStringStore store) {
+        this.myStore = store;
         this.hostname = config.serviceDnsName;
         this.port = config.peerPort;
     }
@@ -38,9 +39,10 @@ public class SyncTask implements Runnable {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 protected void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(
-                            new ObjectEncoder(),
-                            new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                            new SyncClientHandler());
+                            new VolatileStringStoreDecoder(),
+                            new VolatileStringStoreEncoder(),
+                            new SyncClientWriteHandler(myStore),
+                            new SyncClientReadHandler(myStore));
                 }
             });
             ChannelFuture f = b.connect(host, port).sync();

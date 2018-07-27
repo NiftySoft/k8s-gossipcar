@@ -1,5 +1,8 @@
 package com.niftysoft.k8s.server;
 
+import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
+import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -10,6 +13,12 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import java.util.List;
 
 public class GossipServerHandler extends ByteToMessageDecoder {
+
+    private final VolatileStringStore myStore;
+
+    public GossipServerHandler(VolatileStringStore store) {
+        this.myStore = store;
+    }
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -41,9 +50,9 @@ public class GossipServerHandler extends ByteToMessageDecoder {
 
     public void switchToSync(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.pipeline();
-        p.addLast("decoder", new ObjectEncoder());
-        p.addLast("encoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
-        p.addLast("handler", new SyncServerHandler());
+        p.addLast("decoder", new VolatileStringStoreDecoder());
+        p.addLast("encoder", new VolatileStringStoreEncoder());
+        p.addLast("handler", new SyncServerHandler(myStore));
     }
 
     public boolean isSync(int magic1, int magic2) {
