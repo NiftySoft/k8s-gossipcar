@@ -5,13 +5,13 @@ package com.niftysoft.k8s.data;
  */
 public class VersionedString {
     /**
-     * Value to
+     * Value to store
      */
-    String value;
+    private String value;
     /**
      * Lamport logical clock value.
      */
-    long version;
+    private long version;
 
     public VersionedString(String str) {
         this.value = str;
