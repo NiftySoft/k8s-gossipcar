@@ -19,6 +19,12 @@
             <artifactId>netty-all</artifactId>
             <version>4.1.27.Final</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -36,7 +42,7 @@
                         </goals>
                         <configuration>
                             <repository>registry.gitlab.com/kalexmills/gossip-sidecar</repository>
-                            <tag>${project.artifactId}-${project.version}</tag>
+                            <tag>${project.version}</tag>
                             <buildArgs>
                                 <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
                             </buildArgs>

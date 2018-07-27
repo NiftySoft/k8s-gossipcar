@@ -2,7 +2,6 @@ package com.niftysoft.k8s.server;
 
 import com.niftysoft.k8s.client.SyncTask;
 import com.niftysoft.k8s.data.Config;
-import com.sun.xml.internal.ws.util.StringUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -15,8 +14,6 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 
-import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class GossipServer {
@@ -49,6 +46,7 @@ public class GossipServer {
             // Start listening
             ChannelFuture f = b.bind(config.peerPort).sync();
 
+            // TODO: Make delay and timing configurable.
             f.channel().eventLoop().scheduleAtFixedRate(new SyncTask(config), 5, 1, TimeUnit.SECONDS);
 
             f.channel().closeFuture().sync();
