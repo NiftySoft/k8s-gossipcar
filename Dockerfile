@@ -9,4 +9,4 @@ ARG JAR_FILE
 ADD target/${JAR_FILE}   /usr/share/gossipcar/gossip-car.jar
 
 WORKDIR /usr/share/gossipcar
-ENTRYPOINT [ "/usr/bin/java", "-jar", "./user-service.jar" ]
+ENTRYPOINT [ "/usr/bin/java", "-jar", "./gossip-car.jar" ]
