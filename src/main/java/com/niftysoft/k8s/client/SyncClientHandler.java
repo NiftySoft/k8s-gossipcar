@@ -4,11 +4,11 @@ import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class SyncClientReadHandler extends ChannelInboundHandlerAdapter {
+public class SyncClientHandler extends ChannelInboundHandlerAdapter {
 
     private final VolatileStringStore myStore;
 
-    public SyncClientReadHandler(VolatileStringStore store) {
+    public SyncClientHandler(VolatileStringStore store) {
         this.myStore = store;
     }
 
@@ -19,6 +19,16 @@ public class SyncClientReadHandler extends ChannelInboundHandlerAdapter {
         VolatileStringStore otherStore = (VolatileStringStore)msg;
 
         myStore.mergeAllFresher(otherStore);
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        ctx.write('S');
+        ctx.write('Y');
+
+        synchronized(myStore) { // Obtain write lock.
+            ctx.writeAndFlush(myStore);
+        }
     }
 
     @Override

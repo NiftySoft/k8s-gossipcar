@@ -19,7 +19,7 @@ public class GossipServerHandler extends ByteToMessageDecoder {
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         if (in.readableBytes() < 2) {
             return;
         }
@@ -31,6 +31,8 @@ public class GossipServerHandler extends ByteToMessageDecoder {
             switchToHeartbeat(ctx);
         } else if (isSync(magic1, magic2)) {
             switchToSync(ctx);
+        } else {
+            throw new UnsupportedOperationException("Got magic bytes " + ((char)magic1) + ((char)magic2));
         }
     }
 

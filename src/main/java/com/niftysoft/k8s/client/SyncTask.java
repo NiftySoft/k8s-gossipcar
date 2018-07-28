@@ -52,8 +52,7 @@ public class SyncTask implements Runnable {
                     ch.pipeline().addLast(
                             new VolatileStringStoreDecoder(),
                             new VolatileStringStoreEncoder(),
-                            new SyncClientWriteHandler(myStore),
-                            new SyncClientReadHandler(myStore));
+                            new SyncClientHandler(myStore));
                 }
             });
             ChannelFuture f = b.connect(host, port).sync();
