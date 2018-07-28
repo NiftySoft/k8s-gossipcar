@@ -1,8 +1,6 @@
 package com.niftysoft.k8s.server;
 
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -50,8 +48,8 @@ public class GossipServerHandler extends ByteToMessageDecoder {
 
     public void switchToSync(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.pipeline();
-        p.addLast("decoder", new VolatileStringStoreDecoder());
-        p.addLast("encoder", new VolatileStringStoreEncoder());
+        p.addLast("decoder", new VolatileStringStore.VolatileStringStoreDecoder());
+        p.addLast("encoder", new VolatileStringStore.VolatileStringStoreEncoder());
         p.addLast("handler", new SyncServerHandler(myStore));
         p.remove(this);
     }

@@ -2,11 +2,14 @@ package com.niftysoft.k8s.data.stringstore;
 
 import com.niftysoft.k8s.data.HashUtil;
 import com.niftysoft.k8s.data.VersionedString;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.ReplayingDecoder;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -22,7 +25,7 @@ public class VolatileStringStore implements Serializable {
      *  Use a long keys internally to avoid sending unnecessary strings over the wire (KeySet). Package private to
      *  enable
      */
-    Map<Long, VersionedString> internalMap;
+    private Map<Long, VersionedString> internalMap;
 
     public VolatileStringStore() {
         internalMap = new HashMap<>();
@@ -70,14 +73,66 @@ public class VolatileStringStore implements Serializable {
         }).getValue();
     }
 
+    /**
+     * @return int the number of entries managed by this store.
+     */
     public int size() { return internalMap.size(); }
+
+    /**
+     * @return this.size() == 0;
+     */
     public boolean isEmpty() { return size() == 0; }
 
+    /**
+     * @param key String
+     * @return Optional<Long> the current version of the value associated with key
+     */
     public Optional<Long> getVersion(String key) {
         long hash = hasher.apply(key);
         if (!internalMap.containsKey(hash))
             return Optional.empty();
 
         return Optional.of(internalMap.get(hash).getVersion());
+    }
+
+    public static class VolatileStringStoreDecoder extends ReplayingDecoder<VolatileStringStore> {
+        @Override
+        protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+            VolatileStringStore result = new VolatileStringStore();
+            int numEntries = in.readInt();
+            for (int i = 0; i < numEntries; ++i) {
+                long key = in.readLong();
+                long verstrVersion = in.readLong();
+
+                byte[] stringBuffer = new byte[in.readInt()];
+                in.readBytes(stringBuffer);
+                String verstrValue = new String(stringBuffer, "UTF-8");
+
+                VersionedString verstr = new VersionedString();
+                verstr.setVersion(verstrVersion);
+                verstr.setValue(verstrValue);
+
+                result.internalMap.put(key, verstr);
+            }
+            out.add(result);
+        }
+    }
+
+    public static class VolatileStringStoreEncoder extends MessageToByteEncoder<VolatileStringStore> {
+        @Override
+        protected void encode(ChannelHandlerContext ctx, VolatileStringStore in, ByteBuf out) throws Exception {
+            Set<Map.Entry<Long, VersionedString>> entrySet = in.internalMap.entrySet();
+            out.writeInt(entrySet.size());
+            for (Map.Entry<Long, VersionedString> entry : entrySet) {
+                out.writeLong(entry.getKey());
+
+                VersionedString verstr = entry.getValue();
+                out.writeLong(verstr.getVersion());
+
+                int nBytes = ByteBufUtil.utf8Bytes(verstr.getValue());
+                out.writeInt(nBytes);
+                ByteBufUtil.reserveAndWriteUtf8(out, verstr.getValue(), nBytes);
+            }
+        }
     }
 }

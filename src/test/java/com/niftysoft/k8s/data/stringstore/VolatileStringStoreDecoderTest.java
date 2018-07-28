@@ -13,7 +13,7 @@ public class VolatileStringStoreDecoderTest {
 
     @Test
     public void testDecodesEmptyMap() {
-        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStoreDecoder());
+        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
         ByteBuf buf = Unpooled.buffer();
         buf.writeInt(0);
@@ -29,7 +29,7 @@ public class VolatileStringStoreDecoderTest {
 
     @Test
     public void testDecodesSingletonMap() throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStoreDecoder());
+        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
         ByteBuf buf = Unpooled.buffer();
         buf.writeInt(1);
@@ -50,7 +50,7 @@ public class VolatileStringStoreDecoderTest {
 
     @Test
     public void testDecodesMultiKeyMap() throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStoreDecoder());
+        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
         ByteBuf buf = Unpooled.buffer();
         buf.writeInt(5);
@@ -86,7 +86,7 @@ public class VolatileStringStoreDecoderTest {
     // TODO: Fix this broken test
     @Test
     public void testDecodesUnicodeStrings() throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStoreDecoder());
+        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
         String unicodeKey = "\u0020\u1234 \u1045";
         String unicodeValue = "\u2014 \u0134 \u1203";

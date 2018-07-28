@@ -1,9 +1,6 @@
 package com.niftysoft.k8s.server;
 
-import com.niftysoft.k8s.client.SyncClientHandler;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
@@ -79,7 +76,7 @@ public class SyncServerHandlerTest {
 
         assertThat(channel.outboundMessages().size()).isEqualTo(1);
 
-        EmbeddedChannel decoderChan = new EmbeddedChannel(new VolatileStringStoreDecoder());
+        EmbeddedChannel decoderChan = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
         decoderChan.writeInbound((ByteBuf) channel.readOutbound());
         Object obj = decoderChan.readInbound();
@@ -101,8 +98,8 @@ public class SyncServerHandlerTest {
 
     private EmbeddedChannel constructTestStack(VolatileStringStore store) {
         return new EmbeddedChannel(
-                new VolatileStringStoreDecoder(),
-                new VolatileStringStoreEncoder(),
+                new VolatileStringStore.VolatileStringStoreDecoder(),
+                new VolatileStringStore.VolatileStringStoreEncoder(),
                 new SyncServerHandler(store));
     }
 }

@@ -17,7 +17,7 @@ public class VolatileStringStoreEncoderTest {
 
     @Before
     public void before() {
-        channel = new EmbeddedChannel(new VolatileStringStoreEncoder());
+        channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreEncoder());
         vss = new VolatileStringStore();
     }
 

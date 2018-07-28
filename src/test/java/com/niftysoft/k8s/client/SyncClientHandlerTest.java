@@ -1,8 +1,6 @@
 package com.niftysoft.k8s.client;
 
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.After;
@@ -93,7 +91,7 @@ public class SyncClientHandlerTest {
         channel.readOutbound(); // Discard the magic bytes for this test.
         channel.readOutbound();
 
-        EmbeddedChannel decoderChan = new EmbeddedChannel(new VolatileStringStoreDecoder());
+        EmbeddedChannel decoderChan = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
         decoderChan.writeInbound((ByteBuf)channel.readOutbound());
 
@@ -119,8 +117,8 @@ public class SyncClientHandlerTest {
 
     private EmbeddedChannel constructTestStack(VolatileStringStore store) {
         return new EmbeddedChannel(
-                new VolatileStringStoreDecoder(),
-                new VolatileStringStoreEncoder(),
+                new VolatileStringStore.VolatileStringStoreDecoder(),
+                new VolatileStringStore.VolatileStringStoreEncoder(),
                 new SyncClientHandler(store));
     }
 }

@@ -1,9 +1,6 @@
 package com.niftysoft.k8s.server;
 
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -44,8 +41,8 @@ public class GossipServerHandlerTest {
 
         chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "SY"));
         assertThat(chan.pipeline().get("handler")).hasSameClassAs(new SyncServerHandler(null));
-        assertThat(chan.pipeline().get("encoder")).hasSameClassAs(new VolatileStringStoreEncoder());
-        assertThat(chan.pipeline().get("decoder")).hasSameClassAs(new VolatileStringStoreDecoder());
+        assertThat(chan.pipeline().get("encoder")).hasSameClassAs(new VolatileStringStore.VolatileStringStoreEncoder());
+        assertThat(chan.pipeline().get("decoder")).hasSameClassAs(new VolatileStringStore.VolatileStringStoreDecoder());
     }
 
     @Test

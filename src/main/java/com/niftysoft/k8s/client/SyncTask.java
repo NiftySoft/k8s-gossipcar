@@ -2,8 +2,6 @@ package com.niftysoft.k8s.client;
 
 import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -50,20 +48,22 @@ public class SyncTask implements Runnable {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 protected void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(
-                            new VolatileStringStoreDecoder(),
-                            new VolatileStringStoreEncoder(),
+                            new VolatileStringStore.VolatileStringStoreDecoder(),
+                            new VolatileStringStore.VolatileStringStoreEncoder(),
                             new SyncClientHandler(myStore));
                 }
             });
             ChannelFuture f = b.connect(host, port).sync();
 
             f.channel().closeFuture().sync();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private InetAddress lookupRandomPeer(String host) {
+    private InetAddress lookupRandomPeer(String host) throws UnknownHostException {
         InetAddress[] peers;
         try {
             peers = InetAddress.getAllByName(host);
@@ -73,8 +73,7 @@ public class SyncTask implements Runnable {
             peers = findAndRemoveOwnAddress(peers);
             return peers[(int)(Math.random() * peers.length)];
         } catch (UnknownHostException e) {
-            System.err.println("Error, unknown host: " + host);
-            throw new RuntimeException(e);
+            throw new UnknownHostException("Error, unknown host: " + host);
         }
     }
 
