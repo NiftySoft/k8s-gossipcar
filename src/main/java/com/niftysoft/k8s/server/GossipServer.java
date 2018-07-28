@@ -3,6 +3,8 @@ package com.niftysoft.k8s.server;
 import com.niftysoft.k8s.client.SyncTask;
 import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
+import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -38,9 +40,7 @@ public class GossipServer {
                 @Override
                  public void initChannel(SocketChannel ch) throws Exception {
                     // TODO: Enable sending object larger than 1 MB
-                    ch.pipeline().addLast(new ObjectEncoder(),
-                                          new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                          new GossipServerHandler(myStore));
+                    ch.pipeline().addLast(new GossipServerHandler(myStore));
                 }
              })
              .option(ChannelOption.SO_BACKLOG, 128)

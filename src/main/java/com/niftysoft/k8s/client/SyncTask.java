@@ -13,17 +13,28 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public class SyncTask implements Runnable {
 
     private final int port;
     private final String hostname;
     private final VolatileStringStore myStore;
+    private final InetAddress podIp;
 
     public SyncTask(Config config, VolatileStringStore store) {
         this.myStore = store;
         this.hostname = config.serviceDnsName;
         this.port = config.peerPort;
+        InetAddress assignMeToPodIp = null;
+        try {
+            assignMeToPodIp = InetAddress.getByName(config.podIp);
+        } catch (UnknownHostException e) {
+            System.err.println("Caught unknown host exception for configured podIp.\n" +
+                    "While not fatal, it means this node might try and connect to itself, which is inefficient.");
+            assignMeToPodIp = null;
+        }
+        podIp = assignMeToPodIp;
     }
 
     @Override
@@ -60,11 +71,27 @@ public class SyncTask implements Runnable {
             if (peers.length == 0) {
                 return null;
             }
+            peers = findAndRemoveOwnAddress(peers);
             return peers[(int)(Math.random() * peers.length)];
         } catch (UnknownHostException e) {
             System.err.println("Error, unknown host: " + host);
             throw new RuntimeException(e);
         }
+    }
+
+    private InetAddress[] findAndRemoveOwnAddress(InetAddress[] peers) {
+        if(podIp == null) return peers;
+
+        boolean found = false;
+        for (int i = 0; i < peers.length; ++i) {
+            if (peers[i].equals(podIp)){
+                found = true;
+            }
+            if (found && i < peers.length - 1) peers[i] = peers[i+1];
+        }
+        if (!found) return peers;
+
+        return Arrays.copyOf(peers, peers.length - 1);
     }
 
 }

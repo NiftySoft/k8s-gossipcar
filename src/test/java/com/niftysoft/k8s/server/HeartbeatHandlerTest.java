@@ -1,6 +1,8 @@
 package com.niftysoft.k8s.server;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Test;
 
@@ -11,6 +13,8 @@ public class HeartbeatHandlerTest {
     @Test
     public void testHeartbeatHandler() {
         EmbeddedChannel chan = new EmbeddedChannel(new HeartbeatHandler());
+
+        chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "anythingatall"));
 
         assertThat(chan.outboundMessages().size()).isEqualTo(1);
 

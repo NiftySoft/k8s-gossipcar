@@ -38,12 +38,12 @@ cache:
   script:
     - 'mvn $MAVEN_CLI_OPTS test-compile'
 
-# For merge requests do not `deploy` but only run `verify`.
+# For merge requests do not `deploy` but only run `test`.
 # See https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
 .verify: &verify
   stage: test
   script:
-    - 'mvn $MAVEN_CLI_OPTS verify site site:stage'
+    - 'mvn $MAVEN_CLI_OPTS test'
   except:
     - master
 
