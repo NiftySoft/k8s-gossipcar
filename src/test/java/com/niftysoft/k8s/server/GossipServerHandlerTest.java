@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class GossipServerHandlerTest {
-    VolatileStringStore vss = mock(VolatileStringStore.class);
+    private VolatileStringStore vss = mock(VolatileStringStore.class);
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();

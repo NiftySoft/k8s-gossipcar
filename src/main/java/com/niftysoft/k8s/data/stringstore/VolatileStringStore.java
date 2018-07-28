@@ -22,17 +22,17 @@ public class VolatileStringStore implements Serializable {
     private static final long serialVersionUID = -5261239982290750103L;
 
     /**
+     *  Use a long keys internally to avoid sending unnecessary strings over the wire (KeySet). Package private to
+     *  enable
+     */
+    private Map<Long, VersionedString> internalMap;
+
+    /**
      * This function is used to ensure that the same hash function is used in all places.
      */
     private static final Function<String, Long> hasher = HashUtil::hash;
 
     public static Function<String,Long> getHasher() { return hasher; }
-
-    /**
-     *  Use a long keys internally to avoid sending unnecessary strings over the wire (KeySet). Package private to
-     *  enable
-     */
-    private Map<Long, VersionedString> internalMap;
 
     public VolatileStringStore() {
         internalMap = new HashMap<>();

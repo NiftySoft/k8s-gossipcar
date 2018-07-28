@@ -12,8 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class VolatileStringStoreEncoderTest {
 
-    EmbeddedChannel channel;
-    VolatileStringStore vss;
+    private EmbeddedChannel channel;
+    private VolatileStringStore vss;
 
     @Before
     public void before() {
@@ -99,6 +99,10 @@ public class VolatileStringStoreEncoderTest {
     }
 
     private static class Entry {
+        public long keyCode;
+        public String value;
+        public long version;
+
         public Entry(String key, String value, long version) {
             this(VolatileStringStore.getHasher().apply(key), value, version);
         }
@@ -107,9 +111,6 @@ public class VolatileStringStoreEncoderTest {
             this.value = value;
             this.version = version;
         }
-        long keyCode;
-        String value;
-        long version;
 
         public boolean equals(Object o) {
             if(o == null) return false;
