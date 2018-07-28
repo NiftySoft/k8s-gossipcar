@@ -29,6 +29,11 @@ public class SyncServerHandlerTest {
     private final PrintStream originalOut = System.out;
     private final PrintStream originalErr = System.err;
 
+    private VolatileStringStore localStore = mock(VolatileStringStore.class);
+
+    @Captor
+    private ArgumentCaptor<VolatileStringStore> storeCaptor;
+
     @Before
     public void setUpStreams() {
         System.setOut(new PrintStream(outContent));
@@ -40,11 +45,6 @@ public class SyncServerHandlerTest {
         System.setOut(originalOut);
         System.setErr(originalErr);
     }
-
-    private VolatileStringStore localStore = mock(VolatileStringStore.class);
-
-    @Captor
-    private ArgumentCaptor<VolatileStringStore> storeCaptor;
 
     @Test
     public void testSyncServerMergesLocalStoreWithRemote() {
