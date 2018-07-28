@@ -53,6 +53,7 @@ public class GossipServerHandler extends ByteToMessageDecoder {
         p.addLast("decoder", new VolatileStringStoreDecoder());
         p.addLast("encoder", new VolatileStringStoreEncoder());
         p.addLast("handler", new SyncServerHandler(myStore));
+        p.remove(this);
     }
 
     public boolean isSync(int magic1, int magic2) {
