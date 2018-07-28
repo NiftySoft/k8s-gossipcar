@@ -9,11 +9,12 @@ import java.nio.charset.Charset;
 
 public class HeartbeatHandler extends ChannelInboundHandlerAdapter {
     @Override
-    public void channelActive(ChannelHandlerContext ctx) {
+    public void channelRead(ChannelHandlerContext ctx, Object obj) {
         // This five-byte string has the advantage of being the same in both big-endian and little-endian encodings.
         // It is also really cute.
         ctx.write(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "bb bb"));
         ctx.flush();
+        ctx.close();
     }
 
     @Override

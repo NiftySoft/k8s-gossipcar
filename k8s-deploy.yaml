@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: gossipSidecar
-        image: k8s-gossip-sidecar:1.0.0
+        image: k8s-gossip-sidecar:latest
         imagePullPolicy: Always
         ports:
         - name: clientHttp

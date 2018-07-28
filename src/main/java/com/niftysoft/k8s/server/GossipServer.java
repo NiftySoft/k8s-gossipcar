@@ -40,9 +40,7 @@ public class GossipServer {
                 @Override
                  public void initChannel(SocketChannel ch) throws Exception {
                     // TODO: Enable sending object larger than 1 MB
-                    ch.pipeline().addLast(new VolatileStringStoreDecoder(),
-                                          new VolatileStringStoreEncoder(),
-                                          new GossipServerHandler(myStore));
+                    ch.pipeline().addLast(new GossipServerHandler(myStore));
                 }
              })
              .option(ChannelOption.SO_BACKLOG, 128)
