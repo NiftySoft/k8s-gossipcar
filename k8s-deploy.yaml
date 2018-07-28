@@ -40,6 +40,12 @@ spec:
         envFrom:
         - configMapRef:
           name: gossipSidecar
+        livenessProbe:
+          tcpSocket:
+            port: peer
+          initialDelaySeconds: 15
+          periodSeconds: 20
+
 ------------------------------------------------------------------------------------------------------------------------
 kind: ConfigMap
 apiVersion: v1

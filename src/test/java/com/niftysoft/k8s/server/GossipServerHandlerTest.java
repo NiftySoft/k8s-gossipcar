@@ -9,23 +9,15 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class GossipServerHandlerTest {
 
-    @Test
-    public void testGossipServerHandlerSwitchesToHeartbeatHandler() {
-        VolatileStringStore localStore = new VolatileStringStore();
-        EmbeddedChannel chan = new EmbeddedChannel(new GossipServerHandler(localStore));
-
-        assertThat(chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "HB"))).isTrue();
-        assertThat(chan.pipeline().get("handler")).hasSameClassAs(new HeartbeatHandler());
-    }
-
+    VolatileStringStore vss = mock(VolatileStringStore.class);
 
     @Test
     public void testGossipServerHandlerSwitchesToSyncHandlersAndSetsEncoderAndDecoder() {
-        VolatileStringStore localStore = new VolatileStringStore();
-        EmbeddedChannel chan = new EmbeddedChannel(new GossipServerHandler(localStore));
+        EmbeddedChannel chan = new EmbeddedChannel(new GossipServerHandler(vss));
 
         chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "SY"));
         assertThat(chan.pipeline().get("handler")).hasSameClassAs(new SyncServerHandler(null));
@@ -35,12 +27,11 @@ public class GossipServerHandlerTest {
 
     @Test
     public void testGossipServerHandlerRespondsToHeartBeat() {
-        VolatileStringStore localStore = new VolatileStringStore();
-        EmbeddedChannel chan = new EmbeddedChannel(new GossipServerHandler(localStore));
+        EmbeddedChannel chan = new EmbeddedChannel(new GossipServerHandler(vss));
 
-        assertThat(chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "HB"))).isTrue();
+        chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "HB"));
 
-        assertThat(chan.inboundMessages().size()).isGreaterThanOrEqualTo(1);
+        assertThat(chan.outboundMessages().size()).isGreaterThanOrEqualTo(1);
     }
 
     @Test
