@@ -1,70 +1,63 @@
 apiVersion: apps/v1
-kind: Service
-metadata:
-  name: gossipSidecar
-  labels:
-    app: gossipSidecar
-spec:
-  clusterIp: None
-  ports:
-    - port: 46747
-      name: gossip
-  selector:
-    app: gossipSidecar
-------------------------------------------------------------------------------------------------------------------------
-apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gossipSidecar
+  name: gossip-sidecar
   labels:
-    app: gossipSidecar
+    app: gossip-sidecar
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: gossipSidecar
+      app: gossip-sidecar
   template:
     metadata:
       labels:
-        app: gossipSidecar
+        app: gossip-sidecar
     spec:
       containers:
-      - name: gossipSidecar
-        image: k8s-gossip-sidecar:latest
+      - name: gossip-sidecar
+        image: registry.gitlab.com/kalexmills/k8s-gossip-sidecar:1.0-SNAPSHOT
         imagePullPolicy: Always
         ports:
-        - name: clientHttp
+        - name: client-http
           containerPort: 80
         - name: peer
           containerPort: 46747
-        envFrom:
-        - configMapRef:
-          name: gossipSidecar
+        env:
+        - name: PEER_PORT
+          value: "46747"
+        - name: CLIENT_PORT
+          value: "80"
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         livenessProbe:
           tcpSocket:
             port: peer
           initialDelaySeconds: 15
           periodSeconds: 20
-
-------------------------------------------------------------------------------------------------------------------------
-kind: ConfigMap
+      imagePullSecrets:
+        - name: regcred
+---
 apiVersion: v1
+kind: Service
 metadata:
-  name: gossipSidecar
+  name: gossip-sidecar
   labels:
-    name: gossipSidecar
-data:
-  PEER_PORT: 46747
-  CLIENT_PORT: 80
-  - name: MY_POD_NAME
-    valueFrom:
-      fieldRef:
-        fieldPath: metadata.name
-  - name: MY_POD_NAMESPACE
-    valueFrom:
-      fieldRef:
-        fieldPath: metadata.namespace
-  - name: MY_POD_IP
-    valueFrom:
-      fieldRef:
-        fieldPath: status.podIP
+    app: gossip-sidecar
+spec:
+  clusterIP: None
+  ports:
+    - port: 46747
+      name: gossip
+  selector:
+    app: gossip-sidecar
