@@ -1,7 +1,6 @@
 package com.niftysoft.k8s.data.stringstore;
 
 import com.niftysoft.k8s.data.HashUtil;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

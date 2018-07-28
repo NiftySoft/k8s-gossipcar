@@ -2,7 +2,6 @@ package com.niftysoft.k8s.data.stringstore;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.util.CharsetUtil;
 import org.junit.Before;
 import org.junit.Test;
 

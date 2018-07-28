@@ -3,23 +3,18 @@ package com.niftysoft.k8s.client;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SyncClientReadHandlerTest {

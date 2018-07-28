@@ -4,7 +4,8 @@ import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStoreDecoder;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStoreEncoder;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.List;
