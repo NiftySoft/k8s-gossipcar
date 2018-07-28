@@ -108,7 +108,7 @@ public class VolatileStringStoreDecoderTest {
     }
 
     private static void writeEntry(ByteBuf buf, String key, String value, long version) throws Exception {
-        buf.writeLong(VolatileStringStore.hasher.apply(key));
+        buf.writeLong(VolatileStringStore.getHasher().apply(key));
         buf.writeLong(version);
         byte[] bytes = value.getBytes("UTF-8");
         buf.writeInt(bytes.length);

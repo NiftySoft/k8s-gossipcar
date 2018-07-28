@@ -90,7 +90,7 @@ public class VolatileStringStoreEncoderTest {
     }
 
     private void assertEntry(ByteBuf buf, String key, String value, long version) {
-        assertThat(buf.readLong()).isEqualTo(VolatileStringStore.hasher.apply(key));
+        assertThat(buf.readLong()).isEqualTo(VolatileStringStore.getHasher().apply(key));
         assertThat(buf.readLong()).isEqualTo(version);
 
         byte[] byteArr = new byte[buf.readInt()];
@@ -100,7 +100,7 @@ public class VolatileStringStoreEncoderTest {
 
     private static class Entry {
         public Entry(String key, String value, long version) {
-            this(VolatileStringStore.hasher.apply(key), value, version);
+            this(VolatileStringStore.getHasher().apply(key), value, version);
         }
         public Entry(long keyCode, String value, long version) {
             this.keyCode = keyCode;

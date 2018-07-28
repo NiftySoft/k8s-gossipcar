@@ -170,6 +170,6 @@ public class VolatileStringStoreTest {
     public void testReferenceHasherViaStaticReferenceDoesNotAffectHashCode() {
         String str = "alpha";
 
-        assertThat(VolatileStringStore.hasher.apply(str)).isEqualTo(HashUtil.hash(str));
+        assertThat(VolatileStringStore.getHasher().apply(str)).isEqualTo(HashUtil.hash(str));
     }
 }
