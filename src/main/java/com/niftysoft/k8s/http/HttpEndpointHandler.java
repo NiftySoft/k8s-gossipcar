@@ -7,6 +7,10 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Typically only one instance of an endpoint handler is constructed and statically glued together at run-time, so they
+ * are intended to be stateless.
+ */
 public abstract class HttpEndpointHandler {
 
     protected Map<String, String> pathParams;
@@ -20,5 +24,12 @@ public abstract class HttpEndpointHandler {
         this.queryParams = params;
     }
 
+    /**
+     * Handles an HTTP request. This method is accessed via multiple-threads, and must remain re-entrant.
+     *
+     * @param ctx
+     * @param req
+     * @param resp
+     */
     public abstract void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse resp);
 }

@@ -15,7 +15,7 @@ public class MapHandler extends HttpEndpointHandler {
     private static final AsciiString TEXT_PLAIN_UTF_8 =
             HttpHeaderValues.TEXT_PLAIN.concat(" ").concat(HttpHeaderValues.CHARSET).concat(" ").concat("UTF-8");
 
-    private VolatileStringStore vss;
+    private final VolatileStringStore vss;
 
     public MapHandler(VolatileStringStore vss) {
         this.vss = vss;
@@ -23,6 +23,7 @@ public class MapHandler extends HttpEndpointHandler {
 
     @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse resp) {
+        // This and all delegate methods must remain re-entrant with respect to the state of this object.
         switch(req.method().name()) {
             case "GET":
                 handleGet(ctx, req, resp);
