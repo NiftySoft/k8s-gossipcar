@@ -14,7 +14,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.BadClientSilencer;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.router.Router;
 
 import java.util.concurrent.TimeUnit;
@@ -60,9 +62,12 @@ public class GossipServer {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     MapHandler mapHandler = new MapHandler(myStore);
-                    ch.pipeline().addLast(new HttpRouteHandler(new Router<HttpEndpointHandler>()
-                        .addRoute(HttpMethod.GET, "/map", mapHandler)
-                        .addRoute(HttpMethod.PUT, "/map", mapHandler)));
+                    ch.pipeline()
+                            .addLast(new HttpServerCodec())
+                            .addLast(new HttpRouteHandler(new Router<HttpEndpointHandler>()
+                                    .addRoute(HttpMethod.GET, "/map", mapHandler)
+                                    .addRoute(HttpMethod.PUT, "/map", mapHandler)),
+                            .addLast(new BadClientSilencer());
                 }
             });
 
