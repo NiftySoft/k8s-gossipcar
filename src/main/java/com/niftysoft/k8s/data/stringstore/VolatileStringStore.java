@@ -76,6 +76,12 @@ public class VolatileStringStore implements Serializable {
     }
 
     /**
+     * @param key String
+     * @return true iff this map contains a value associated with key.
+     */
+    public boolean containsKey(String key) { return internalMap.containsKey(key); }
+
+    /**
      * @return int the number of entries managed by this store.
      */
     public int size() { return internalMap.size(); }
