@@ -42,8 +42,8 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
 
+        <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>3.10.0</version>
@@ -69,6 +69,12 @@
             <artifactId>powermock-module-junit4</artifactId>
             <version>${powermock.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client</artifactId>
+            <version>1.23.0</version>
         </dependency>
 
         <dependency>

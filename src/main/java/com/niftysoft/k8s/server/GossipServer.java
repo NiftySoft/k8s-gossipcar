@@ -33,47 +33,53 @@ public class GossipServer {
         VolatileStringStore myStore = new VolatileStringStore();
 
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        EventLoopGroup peerWorkerGroup = new NioEventLoopGroup();
+        EventLoopGroup clientWorkerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
-             .channel(NioServerSocketChannel.class)
-             .childHandler(new ChannelInitializer<SocketChannel>(){
-                @Override
-                 public void initChannel(SocketChannel ch) throws Exception {
-                    // TODO: Enable sending object larger than 1 MB
-                    ch.pipeline().addLast(new GossipServerHandler(myStore));
-                }
-             })
-             .option(ChannelOption.SO_BACKLOG, 128)
-             .childOption(ChannelOption.SO_KEEPALIVE, true);
+            // Configure channel used to sync with peers.
+            b.group(bossGroup, peerWorkerGroup)
+                 .channel(NioServerSocketChannel.class)
+                 .childHandler(new ChannelInitializer<SocketChannel>(){
+                    @Override
+                     public void initChannel(SocketChannel ch) throws Exception {
+                        // TODO: Enable sending object larger than 1 MB
+                        ch.pipeline().addLast(new GossipServerHandler(myStore));
+                    }
+                 }).option(ChannelOption.SO_BACKLOG, 128)
+                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-            // Start listening
-            ChannelFuture f = b.bind(config.peerPort).sync();
+            // Start listening to peers
+            ChannelFuture f1 = b.bind(config.peerPort).sync();
 
             // TODO: Make delay and timing configurable.
-            f.channel().eventLoop().scheduleAtFixedRate(new SyncTask(config, myStore), 5, 1, TimeUnit.SECONDS);
+            f1.channel().eventLoop().scheduleAtFixedRate(new SyncTask(config, myStore), 5, 1, TimeUnit.SECONDS);
 
+            // Configure HTTP channel used to receive data from clients.
+            b = new ServerBootstrap();
+            b.group(bossGroup, clientWorkerGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    public void initChannel(SocketChannel ch) throws Exception {
+                        MapHandler mapHandler = new MapHandler(myStore);
+                        ch.pipeline()
+                                .addLast(new HttpServerCodec())
+                                .addLast(new HttpRouteHandler(new Router<HttpEndpointHandler>()
+                                        .addRoute(HttpMethod.GET, "/map", mapHandler)
+                                        .addRoute(HttpMethod.PUT, "/map", mapHandler)))
+                                .addLast(new BadClientSilencer());
+                    }
+                }).childOption(ChannelOption.TCP_NODELAY, java.lang.Boolean.TRUE)
+                .childOption(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE);;
 
-            f = b.bind(config.clientPort).sync();
-            b.group(bossGroup, workerGroup)
-             .channel(NioServerSocketChannel.class)
-             .childHandler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                    MapHandler mapHandler = new MapHandler(myStore);
-                    ch.pipeline()
-                            .addLast(new HttpServerCodec())
-                            .addLast(new HttpRouteHandler(new Router<HttpEndpointHandler>()
-                                    .addRoute(HttpMethod.GET, "/map", mapHandler)
-                                    .addRoute(HttpMethod.PUT, "/map", mapHandler)),
-                            .addLast(new BadClientSilencer());
-                }
-            });
+            // Start listening for clients
+            ChannelFuture f2 = b.bind(config.clientPort).sync();
 
-            f.channel().closeFuture().sync();
+            f1.channel().closeFuture().sync();
+            f2.channel().closeFuture().sync();
         } finally {
-            workerGroup.shutdownGracefully();
+            peerWorkerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
     }

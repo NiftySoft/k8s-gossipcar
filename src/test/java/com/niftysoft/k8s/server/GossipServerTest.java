@@ -24,6 +24,7 @@ public class GossipServerTest {
     @Test(timeout = 30000)
     public void testGossipServerStartsWithoutException() throws Exception {
         Config config = new Config();
+        config.clientPort = 8080;
         config.serviceDnsName = "localhost";
         final GossipServer server = new GossipServer(config);
 
