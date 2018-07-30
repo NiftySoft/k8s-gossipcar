@@ -24,10 +24,10 @@ public class DefaultHttpHandlerTest {
     private FullHttpResponse resp = mock(FullHttpResponse.class);
 
     @Captor
-    ArgumentCaptor<HttpResponseStatus> statusCaptor;
+    private ArgumentCaptor<HttpResponseStatus> statusCaptor;
 
     @Captor
-    ArgumentCaptor<FullHttpResponse> responseCaptor;
+    private ArgumentCaptor<FullHttpResponse> responseCaptor;
 
     @Before
     public void before() {

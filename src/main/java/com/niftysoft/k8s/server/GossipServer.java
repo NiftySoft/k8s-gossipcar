@@ -71,7 +71,7 @@ public class GossipServer {
                                 .addLast(new BadClientSilencer());
                     }
                 }).childOption(ChannelOption.TCP_NODELAY, java.lang.Boolean.TRUE)
-                .childOption(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE);;
+                .childOption(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE);
 
             // Start listening for clients
             ChannelFuture f2 = b.bind(config.clientPort).sync();

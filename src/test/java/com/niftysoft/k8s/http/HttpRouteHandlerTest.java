@@ -9,8 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpMethod.PUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -49,8 +47,8 @@ public class HttpRouteHandlerTest {
 
         Router<HttpEndpointHandler> router = new Router<>();
 
-        router.addRoute(GET, "/this/is/a/route", endpoint1);
-        router.addRoute(PUT, "/another/route", endpoint2);
+        router.addRoute(HttpMethod.GET, "/this/is/a/route", endpoint1);
+        router.addRoute(HttpMethod.PUT, "/another/route", endpoint2);
 
         EmbeddedChannel chan = constructTestStack(router);
 
@@ -92,7 +90,7 @@ public class HttpRouteHandlerTest {
     }
 
     public FullHttpRequest constructRequest() {
-        return new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, GET, "/");
+        return new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
     }
 
     public EmbeddedChannel constructTestStack(Router<HttpEndpointHandler> router) {
