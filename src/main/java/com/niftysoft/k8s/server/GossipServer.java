@@ -22,6 +22,9 @@ import io.netty.handler.codec.http.router.Router;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author K. Alex Mills
+ */
 public class GossipServer {
     private Config config;
 

@@ -16,6 +16,8 @@ import java.util.function.Function;
  * Streamlined map implementing a small subset of the Map interface. Maps Strings to Strings. Each value
  * is internally versioned. When put is called on a value, its version is incremented. When mergeAllFresher is
  * called, only values with versions larger than the current version are updated.
+ *
+ * @author K. Alex Mills
  */
 public class VolatileStringStore implements Serializable {
 

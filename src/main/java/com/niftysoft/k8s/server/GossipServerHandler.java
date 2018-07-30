@@ -8,6 +8,9 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.List;
 
+/**
+ * @author K. Alex Mills
+ */
 public class GossipServerHandler extends ByteToMessageDecoder {
 
     private final VolatileStringStore myStore;

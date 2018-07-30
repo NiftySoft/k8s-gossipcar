@@ -8,12 +8,19 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.BadClientSilencer;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
+/**
+ * @author K. Alex Mills
+ */
 public class SyncTask implements Runnable {
+    private static final InternalLogger log = InternalLoggerFactory.getInstance(BadClientSilencer.class);
 
     private final int port;
     private final String hostname;
@@ -21,6 +28,7 @@ public class SyncTask implements Runnable {
     private final InetAddress podIp;
 
     public SyncTask(Config config, VolatileStringStore store) {
+
         this.myStore = store;
         this.hostname = config.serviceDnsName;
         this.port = config.peerPort;
@@ -29,7 +37,7 @@ public class SyncTask implements Runnable {
             assignMeToPodIp = InetAddress.getByName(config.podIp);
         } catch (UnknownHostException e) {
             System.err.println("Caught unknown host exception for configured podIp.\n" +
-                    "While not fatal, it means this node might try and connect to itself, which is inefficient.");
+                    "While not fatal, it means this node might try and sync with itself, which is inefficient.");
             assignMeToPodIp = null;
         }
         podIp = assignMeToPodIp;
@@ -39,6 +47,7 @@ public class SyncTask implements Runnable {
     public void run() {
         try {
             InetAddress host = lookupRandomPeer(hostname);
+            log.debug("Syncing with " + host);
 
             if (host == null) return; // No friends. :-(
 

@@ -12,6 +12,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+/**
+ * @author K. Alex Mills
+ */
 public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private Router<HttpEndpointHandler> router;

@@ -2,6 +2,8 @@ package com.niftysoft.k8s.data;
 
 /**
  * A lightweight String which is associated with a version ID.
+ *
+ * @author K. Alex Mills
  */
 public class VersionedString {
     /**
