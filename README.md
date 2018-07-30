@@ -1,9 +1,12 @@
 # Kubernetes Gossip Sidecar
 
-![https://opensource.org/licenses/mit-license.php](https://badges.frapsoft.com/os/mit/mit.png?v=103)
 ![https://gitlab.com/kalexmills/k8s-gossip-sidecar/commits/%{default_branch}](https://gitlab.com/kalexmills/k8s-gossip-sidecar/badges/master/pipeline.svg)
 ![https://www.codacy.com/app/kalexmills/k8s-gossip-sidecar?utm_source=gitlab.com&amp;utm_medium=referral&amp;utm_content=kalexmills/k8s-gossip-sidecar&amp;utm_campaign=Badge_Grade](https://api.codacy.com/project/badge/Grade/144c0e99b8e843538c6e5c986b7d7941)
 ![https://app.codacy.com/project/kalexmills/k8s-gossip-sidecar/dashboard](https://img.shields.io/codacy/coverage/144c0e99b8e843538c6e5c986b7d7941.svg)
+
+![http://github.com/niftysoft/k8s-gossip-sidecar](https://img.shields.io/badge/github-k8s--gossip--sidecar-cc69b4.svg?logo=github)
+![https://opensource.org/licenses/mit-license.php](https://img.shields.io/badge/license-MIT-blue.svg)
+
 
 A lightweight Kubernetes sidecar for performing slow-sync on an in-memory key-value
 store.
