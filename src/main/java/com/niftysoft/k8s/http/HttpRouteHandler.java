@@ -22,37 +22,33 @@ public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpReques
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+        FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
         try {
             if (HttpUtil.is100ContinueExpected(req)) {
-                send100Continue(ctx);
+                resp = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
                 return;
             }
 
-            FullHttpResponse resp = new DefaultFullHttpResponse(req.protocolVersion(), INTERNAL_SERVER_ERROR);
-
             RouteResult<HttpEndpointHandler> resolvedRoute = router.route(req.method(), req.uri());
             if (resolvedRoute == null) {
-                DefaultHttpHandler.respond404(ctx, req, resp);
+                resp = DefaultHttpHandler.respond404(req);
                 return;
             }
 
             resolvedRoute.target().setPathParams(resolvedRoute.pathParams());
             resolvedRoute.target().setQueryParams(resolvedRoute.queryParams());
 
+            resp = resolvedRoute.target().handleRequest(req);
+
             boolean keepAlive = HttpUtil.isKeepAlive(req);
             if (keepAlive) resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
 
-            resolvedRoute.target().handleRequest(ctx, req, resp);
         } finally {
-            ChannelFuture future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            ChannelFuture future = ctx.writeAndFlush(resp);
+
             if (!HttpUtil.isKeepAlive(req)) {
                 future.addListener(ChannelFutureListener.CLOSE);
             }
         }
-    }
-
-    private static void send100Continue(ChannelHandlerContext ctx) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
-        ctx.write(response);
     }
 }

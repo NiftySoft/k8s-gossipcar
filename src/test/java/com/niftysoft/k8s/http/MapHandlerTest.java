@@ -36,7 +36,7 @@ public class MapHandlerTest {
         chan.writeInbound(req);
         chan.flush();
 
-        assertThat(chan.outboundMessages().size()).isEqualTo(3);
+        assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
         FullHttpResponse resp = pollHttpResponse(chan);
 
@@ -44,12 +44,10 @@ public class MapHandlerTest {
         assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
         assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE)).isEqualTo("text/plain; charset=UTF-8");
 
-        ByteBuf buf = (ByteBuf)chan.outboundMessages().poll();
+        ByteBuf buf = resp.content();
         String content = new String(ByteBufUtil.getBytes(buf), Charset.forName("UTF-8"));
 
         assertThat(content).isEqualTo("key=value\n");
-
-        assertThat(chan.outboundMessages().poll()).isEqualTo(LastHttpContent.EMPTY_LAST_CONTENT);
     }
 
     @Test
@@ -68,7 +66,7 @@ public class MapHandlerTest {
         chan.writeInbound(req);
         chan.flush();
 
-        assertThat(chan.outboundMessages().size()).isEqualTo(3);
+        assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
         FullHttpResponse resp = pollHttpResponse(chan);
 
@@ -76,12 +74,10 @@ public class MapHandlerTest {
         assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
         assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE)).isEqualTo("text/plain; charset=UTF-8");
 
-        ByteBuf buf = (ByteBuf)chan.outboundMessages().poll();
+        ByteBuf buf = resp.content();
         String content = new String(ByteBufUtil.getBytes(buf), Charset.forName("UTF-8"));
 
         assertThat(content).isEqualTo("key1=value1\nkey2=value2\nkey3=value3\n");
-
-        assertThat(chan.outboundMessages().poll()).isEqualTo(LastHttpContent.EMPTY_LAST_CONTENT);
     }
 
     @Test
@@ -99,7 +95,7 @@ public class MapHandlerTest {
         chan.writeInbound(req);
         chan.flush();
 
-        assertThat(chan.outboundMessages().size()).isEqualTo(3);
+        assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
         FullHttpResponse resp = pollHttpResponse(chan);
 
@@ -107,12 +103,10 @@ public class MapHandlerTest {
         assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
         assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE)).isEqualTo("text/plain; charset=UTF-8");
 
-        ByteBuf buf = (ByteBuf)chan.outboundMessages().poll();
+        ByteBuf buf = resp.content();
         String content = new String(ByteBufUtil.getBytes(buf), Charset.forName("UTF-8"));
 
         assertThat(content).isEqualTo("key1=value1\nkey3=value3\n");
-
-        assertThat(chan.outboundMessages().poll()).isEqualTo(LastHttpContent.EMPTY_LAST_CONTENT);
     }
 
     @Test
@@ -128,15 +122,13 @@ public class MapHandlerTest {
         chan.writeInbound(req);
         chan.flush();
 
-        assertThat(chan.outboundMessages().size()).isEqualTo(2);
+        assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
         FullHttpResponse resp = pollHttpResponse(chan);
 
         assertThat(resp.status().code()).isEqualTo(201);
         assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
         assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE)).isEqualTo("text/plain; charset=UTF-8");
-
-        assertThat(chan.outboundMessages().poll()).isEqualTo(LastHttpContent.EMPTY_LAST_CONTENT);
 
         assertThat(vss.get("key")).isEqualTo("value");
     }
@@ -164,13 +156,11 @@ public class MapHandlerTest {
         chan.writeInbound(req);
         chan.flush();
 
-        assertThat(chan.outboundMessages().size()).isEqualTo(2);
+        assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
         FullHttpResponse resp = pollHttpResponse(chan);
 
         assertThat(resp.status().code()).isEqualTo(404);
-
-        assertThat(chan.outboundMessages().poll()).isEqualTo(LastHttpContent.EMPTY_LAST_CONTENT);
     }
 
     public FullHttpResponse pollHttpResponse(EmbeddedChannel chan) {

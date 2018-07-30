@@ -27,9 +27,7 @@ public abstract class HttpEndpointHandler {
     /**
      * Handles an HTTP request. This method is accessed via multiple-threads, and must remain re-entrant.
      *
-     * @param ctx
      * @param req
-     * @param resp
      */
-    public abstract void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse resp);
+    public abstract FullHttpResponse handleRequest(FullHttpRequest req);
 }

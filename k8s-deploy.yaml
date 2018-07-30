@@ -28,6 +28,8 @@ spec:
           value: "46747"
         - name: CLIENT_PORT
           value: "80"
+        - name: SERVICE_DNS_NAME
+          value: "gossip-sidecar.default"
         - name: MY_POD_NAME
           valueFrom:
             fieldRef:

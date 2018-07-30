@@ -1,6 +1,5 @@
 package com.niftysoft.k8s.http;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import org.assertj.core.util.Lists;
@@ -18,7 +17,7 @@ public class HttpEndpointHandlerTest {
         test.setPathParams(Maps.newHashMap("query", "me"));
         test.setQueryParams(Maps.newHashMap("test", Lists.list("p1","p2")));
 
-        test.handleRequest(null, null, null);
+        test.handleRequest(null);
 
         // Included to make Codacy shut up.
         assertThat(true).isTrue();
@@ -27,9 +26,10 @@ public class HttpEndpointHandlerTest {
     private static class UnderTest extends HttpEndpointHandler {
 
         @Override
-        public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse resp) {
+        public FullHttpResponse handleRequest(FullHttpRequest req) {
             assertThat(queryParams).containsEntry("test", Lists.list("p1", "p2"));
             assertThat(pathParams).containsEntry("query", "me");
+            return null;
         }
     }
 }

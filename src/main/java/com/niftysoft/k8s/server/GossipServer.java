@@ -16,6 +16,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.BadClientSilencer;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.router.Router;
 
@@ -65,6 +66,7 @@ public class GossipServer {
                         MapHandler mapHandler = new MapHandler(myStore);
                         ch.pipeline()
                                 .addLast(new HttpServerCodec())
+                                .addLast(new HttpObjectAggregator(1048576))
                                 .addLast(new HttpRouteHandler(new Router<HttpEndpointHandler>()
                                         .addRoute(HttpMethod.GET, "/map", mapHandler)
                                         .addRoute(HttpMethod.PUT, "/map", mapHandler)))

@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpRouteHandlerTest {
@@ -30,20 +31,22 @@ public class HttpRouteHandlerTest {
         chan.writeInbound(req);
         chan.flush();
 
-        assertThat(chan.outboundMessages().size()).isEqualTo(2);
+        assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
         Object obj = chan.outboundMessages().poll();
         assertThat(obj).hasSameClassAs(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
         FullHttpResponse resp = (FullHttpResponse)obj;
 
         assertThat(resp.status()).isEqualTo(HttpResponseStatus.CONTINUE);
-        assertThat(chan.outboundMessages().poll()).isEqualTo(LastHttpContent.EMPTY_LAST_CONTENT);
     }
 
     @Test
     public void testHttpRouteHandlerHandlesRoutesAsRequested() {
         HttpEndpointHandler endpoint1 = mock(HttpEndpointHandler.class);
+        when(endpoint1.handleRequest(any())).thenReturn(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+
         HttpEndpointHandler endpoint2 = mock(HttpEndpointHandler.class);
+        when(endpoint2.handleRequest(any())).thenReturn(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
 
         Router<HttpEndpointHandler> router = new Router<>();
 
@@ -64,10 +67,10 @@ public class HttpRouteHandlerTest {
         chan.writeInbound(req2);
         chan.flush();
 
-        verify(endpoint1).handleRequest(any(), requestCaptor.capture(), any());
+        verify(endpoint1).handleRequest(requestCaptor.capture());
         assertThat(requestCaptor.getValue()).isEqualTo(req1);
 
-        verify(endpoint2).handleRequest(any(), requestCaptor.capture(), any());
+        verify(endpoint2).handleRequest(requestCaptor.capture());
         assertThat(requestCaptor.getValue()).isEqualTo(req2);
     }
 
@@ -86,7 +89,6 @@ public class HttpRouteHandlerTest {
         FullHttpResponse resp = (FullHttpResponse)chan.outboundMessages().poll();
 
         assertThat(resp.status().code()).isEqualTo(404);
-        assertThat(chan.outboundMessages().poll()).isEqualTo(LastHttpContent.EMPTY_LAST_CONTENT);
     }
 
     public FullHttpRequest constructRequest() {
