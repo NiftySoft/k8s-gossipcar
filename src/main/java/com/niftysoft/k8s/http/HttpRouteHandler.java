@@ -22,26 +22,32 @@ public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpReques
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        if (HttpUtil.is100ContinueExpected(req)) {
-            send100Continue(ctx);
-            return;
-        }
+        try {
+            if (HttpUtil.is100ContinueExpected(req)) {
+                send100Continue(ctx);
+                return;
+            }
 
-        RouteResult<HttpEndpointHandler> resolvedRoute = router.route(req.method(),req.uri());
+            FullHttpResponse resp = new DefaultFullHttpResponse(req.protocolVersion(), INTERNAL_SERVER_ERROR);
 
-        resolvedRoute.target().setPathParams(resolvedRoute.pathParams());
-        resolvedRoute.target().setQueryParams(resolvedRoute.queryParams());
+            RouteResult<HttpEndpointHandler> resolvedRoute = router.route(req.method(), req.uri());
+            if (resolvedRoute == null) {
+                DefaultHttpHandler.respond404(ctx, req, resp);
+                return;
+            }
 
-        FullHttpResponse resp = new DefaultFullHttpResponse(req.protocolVersion(), INTERNAL_SERVER_ERROR);
+            resolvedRoute.target().setPathParams(resolvedRoute.pathParams());
+            resolvedRoute.target().setQueryParams(resolvedRoute.queryParams());
 
-        boolean keepAlive = HttpUtil.isKeepAlive(req);
-        if (keepAlive) resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            boolean keepAlive = HttpUtil.isKeepAlive(req);
+            if (keepAlive) resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
 
-        resolvedRoute.target().handleRequest(ctx, req, resp);
-
-        ChannelFuture future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-        if (!keepAlive) {
-            future.addListener(ChannelFutureListener.CLOSE);
+            resolvedRoute.target().handleRequest(ctx, req, resp);
+        } finally {
+            ChannelFuture future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            if (!HttpUtil.isKeepAlive(req)) {
+                future.addListener(ChannelFutureListener.CLOSE);
+            }
         }
     }
 

@@ -13,7 +13,7 @@ import java.util.List;
 public class MapHandler extends HttpEndpointHandler {
 
     private static final AsciiString TEXT_PLAIN_UTF_8 =
-            HttpHeaderValues.TEXT_PLAIN.concat(" ").concat(HttpHeaderValues.CHARSET).concat(" ").concat("UTF-8");
+            HttpHeaderValues.TEXT_PLAIN.concat("; ").concat(HttpHeaderValues.CHARSET).concat("=").concat("UTF-8");
 
     private final VolatileStringStore vss;
 
@@ -28,8 +28,8 @@ public class MapHandler extends HttpEndpointHandler {
             case "GET":
                 handleGet(ctx, req, resp);
                 return;
-            case "POST":
-                handlePost(ctx, req, resp);
+            case "PUT":
+                handlePut(ctx, req, resp);
                 return;
             default:
                 DefaultHttpHandler.respond404(ctx, req, resp);
@@ -70,7 +70,7 @@ public class MapHandler extends HttpEndpointHandler {
         ctx.write(ByteBufUtil.writeUtf8(ByteBufAllocator.DEFAULT, buffer));
     }
 
-    public void handlePost(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse resp) {
+    public void handlePut(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse resp) {
         if (queryParams.size() != 1) {
             DefaultHttpHandler.respond422(ctx, req, resp);
             return;
@@ -87,7 +87,6 @@ public class MapHandler extends HttpEndpointHandler {
 
         vss.put(key, content);
 
-        resp.setStatus(HttpResponseStatus.OK);
         resp.headers().set(HttpHeaderNames.CONTENT_TYPE, TEXT_PLAIN_UTF_8);
         ctx.write(resp);
     }
