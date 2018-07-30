@@ -71,6 +71,7 @@ MapHandler extends HttpEndpointHandler {
 
         resp.setStatus(HttpResponseStatus.OK);
         resp.headers().set(HttpHeaderNames.CONTENT_TYPE, TEXT_PLAIN_UTF_8);
+        resp.headers().set(HttpHeaderNames.CONTENT_LENGTH, resp.content().readableBytes());
         return resp;
     }
 
@@ -93,6 +94,7 @@ MapHandler extends HttpEndpointHandler {
         vss.put(key, content);
 
         resp.headers().set(HttpHeaderNames.CONTENT_TYPE, TEXT_PLAIN_UTF_8);
+        resp.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
         return resp;
     }
 }

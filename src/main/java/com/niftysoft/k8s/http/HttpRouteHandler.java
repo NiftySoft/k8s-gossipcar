@@ -22,7 +22,9 @@ public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpReques
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
+        FullHttpResponse resp = null;
+        boolean keepAlive = HttpUtil.isKeepAlive(req);
+
         try {
             if (HttpUtil.is100ContinueExpected(req)) {
                 resp = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
@@ -40,10 +42,11 @@ public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpReques
 
             resp = resolvedRoute.target().handleRequest(req);
 
-            boolean keepAlive = HttpUtil.isKeepAlive(req);
             if (keepAlive) resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
 
         } finally {
+            if (resp == null) resp = new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
+
             ChannelFuture future = ctx.writeAndFlush(resp);
 
             if (!HttpUtil.isKeepAlive(req)) {
