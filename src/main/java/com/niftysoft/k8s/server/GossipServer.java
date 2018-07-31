@@ -7,10 +7,7 @@ import com.niftysoft.k8s.http.HttpEndpointHandler;
 import com.niftysoft.k8s.http.HttpRouteHandler;
 import com.niftysoft.k8s.http.MapHandler;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -20,6 +17,9 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.router.Router;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,7 +48,7 @@ public class GossipServer {
                     @Override
                      public void initChannel(SocketChannel ch) throws Exception {
                         // TODO: Enable sending object larger than 1 MB
-                        ch.pipeline().addLast(new GossipServerHandler(myStore));
+                        ch.pipeline().addLast(buildHttpPipeline(myStore).toArray(new ChannelHandler[0]));
                     }
                  }).option(ChannelOption.SO_BACKLOG, 128)
                  .childOption(ChannelOption.SO_KEEPALIVE, true);
@@ -66,14 +66,7 @@ public class GossipServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
-                        MapHandler mapHandler = new MapHandler(myStore);
-                        ch.pipeline()
-                                .addLast(new HttpServerCodec())
-                                .addLast(new HttpObjectAggregator(1048576))
-                                .addLast(new HttpRouteHandler(new Router<HttpEndpointHandler>()
-                                        .addRoute(HttpMethod.GET, "/map", mapHandler)
-                                        .addRoute(HttpMethod.PUT, "/map", mapHandler)))
-                                .addLast(new BadClientSilencer());
+                        ch.pipeline().addLast(buildHttpPipeline(myStore).toArray(new ChannelHandler[0]));
                     }
                 }).childOption(ChannelOption.TCP_NODELAY, java.lang.Boolean.TRUE)
                 .childOption(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE);
@@ -87,6 +80,20 @@ public class GossipServer {
             peerWorkerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
+    }
+
+    public static List<ChannelHandler> buildSyncPipeline(VolatileStringStore store) {
+        return Arrays.asList(new GossipServerHandler(store));
+    }
+
+    public static List<ChannelHandler> buildHttpPipeline(VolatileStringStore store) {
+        MapHandler mapHandler = new MapHandler(store);
+        return Arrays.asList(new HttpServerCodec(),
+                             new HttpObjectAggregator(1048576),
+                             new HttpRouteHandler(new Router<HttpEndpointHandler>()
+                                    .addRoute(HttpMethod.GET, "/map", mapHandler)
+                                    .addRoute(HttpMethod.PUT, "/map", mapHandler)),
+                             new BadClientSilencer());
     }
 
     public static void main(String[] args) throws Exception {

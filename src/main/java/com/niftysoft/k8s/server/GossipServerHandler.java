@@ -25,8 +25,8 @@ public class GossipServerHandler extends ByteToMessageDecoder {
             return;
         }
 
-        final int magic1 = in.getUnsignedByte(in.readerIndex());
-        final int magic2 = in.getUnsignedByte(in.readerIndex() + 1);
+        final int magic1 = in.readByte();
+        final int magic2 = in.readByte();
 
         if (isHeartbeat(magic1, magic2)) {
             switchToHeartbeat(ctx);
@@ -35,6 +35,7 @@ public class GossipServerHandler extends ByteToMessageDecoder {
         } else {
             throw new UnsupportedOperationException("Got magic bytes " + ((char)magic1) + ((char)magic2));
         }
+        ctx.fireChannelActive();
     }
 
     @Override

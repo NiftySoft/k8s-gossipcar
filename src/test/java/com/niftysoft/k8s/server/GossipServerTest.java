@@ -21,6 +21,8 @@ public class GossipServerTest {
         environmentVariables.clear("SERVICE_DNS_NAME");
     }
 
+
+
     @Test(timeout = 30000)
     public void testGossipServerStartsWithoutException() throws Exception {
         Config config = new Config();

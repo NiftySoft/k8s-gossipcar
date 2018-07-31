@@ -1,6 +1,10 @@
 package com.niftysoft.k8s.client;
 
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.BadClientSilencer;
@@ -13,7 +17,6 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 public class SyncClientHandler extends ChannelInboundHandlerAdapter {
     private static final InternalLogger log = InternalLoggerFactory.getInstance(BadClientSilencer.class);
 
-
     private final VolatileStringStore myStore;
 
     public SyncClientHandler(VolatileStringStore store) {
@@ -23,12 +26,11 @@ public class SyncClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         log.debug("Initiating sync.");
-        ctx.write('S');
-        ctx.write('Y');
+        ctx.write(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "SY"));
 
         synchronized(myStore) { // Obtain write lock.
             log.debug("Writing local store during sync initiation.");
-            ctx.writeAndFlush(myStore);
+            ChannelFuture future = ctx.writeAndFlush(myStore);
         }
     }
 
@@ -40,7 +42,6 @@ public class SyncClientHandler extends ChannelInboundHandlerAdapter {
         VolatileStringStore otherStore = (VolatileStringStore)msg;
 
         myStore.mergeAllFresher(otherStore);
-        ctx.close();
     }
 
     @Override

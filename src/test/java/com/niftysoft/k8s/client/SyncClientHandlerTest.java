@@ -44,7 +44,6 @@ public class SyncClientHandlerTest {
         System.setErr(originalErr);
     }
 
-
     @Test
     public void testSyncTaskMergesLocalStoreWithRemote() {
         final VolatileStringStore remoteStore = new VolatileStringStore();
@@ -68,13 +67,13 @@ public class SyncClientHandlerTest {
 
         EmbeddedChannel channel = constructTestStack(store);
 
-        assertThat(channel.outboundMessages().size()).isEqualTo(3);
+        assertThat(channel.outboundMessages().size()).isEqualTo(2);
 
-        char magic1 = channel.readOutbound();
-        char magic2 = channel.readOutbound();
+        ByteBuf buf = channel.readOutbound();
 
-        assertThat(magic1).isEqualTo('S');
-        assertThat(magic2).isEqualTo('Y');
+        assertThat(buf.readableBytes()).isEqualTo(2);
+        assertThat(buf.readByte()).isEqualTo((byte)'S');
+        assertThat(buf.readByte()).isEqualTo((byte)'Y');
     }
 
     @Test
@@ -85,10 +84,9 @@ public class SyncClientHandlerTest {
 
         EmbeddedChannel channel = constructTestStack(testStore);
 
-        assertThat(channel.outboundMessages().size()).isEqualTo(3);
+        assertThat(channel.outboundMessages().size()).isEqualTo(2);
 
         channel.readOutbound(); // Discard the magic bytes for this test.
-        channel.readOutbound();
 
         EmbeddedChannel decoderChan = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 

@@ -1,8 +1,7 @@
 package com.niftysoft.k8s.server;
 
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.BadClientSilencer;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -10,7 +9,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 /**
  * @author K. Alex Mills
  */
-public class SyncServerHandler extends ChannelInboundHandlerAdapter {
+public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileStringStore> {
     private static final InternalLogger log = InternalLoggerFactory.getInstance(BadClientSilencer.class);
 
     private final VolatileStringStore myStore;
@@ -20,19 +19,20 @@ public class SyncServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        assert(msg.getClass().equals(VolatileStringStore.class));
-        log.debug("Remote sync initiated by peer. Receiving store.");
+    public void channelActive(ChannelHandlerContext ctx) {
+    }
 
-        VolatileStringStore otherStore = (VolatileStringStore)msg;
+    @Override
+    public void channelRead0(ChannelHandlerContext ctx, VolatileStringStore otherStore) {
+        log.debug("Remote sync initiated by peer. Receiving store.");
 
         myStore.mergeAllFresher(otherStore);
 
         synchronized(myStore) {
             log.debug("Writing store to remote.");
-            ctx.writeAndFlush(myStore);
+            ChannelFuture future = ctx.writeAndFlush(myStore);
+            future.addListener(ChannelFutureListener.CLOSE);
         }
-        ctx.close();
     }
 
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

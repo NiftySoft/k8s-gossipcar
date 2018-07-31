@@ -3,9 +3,7 @@ package com.niftysoft.k8s.client;
 import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.BadClientSilencer;
@@ -14,7 +12,9 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author K. Alex Mills
@@ -56,10 +56,7 @@ public class SyncTask implements Runnable {
             b.option(ChannelOption.SO_KEEPALIVE, true);
             b.handler(new ChannelInitializer<SocketChannel>() {
                 protected void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(
-                            new VolatileStringStore.VolatileStringStoreDecoder(),
-                            new VolatileStringStore.VolatileStringStoreEncoder(),
-                            new SyncClientHandler(myStore));
+                    ch.pipeline().addLast(buildPipeline(myStore).toArray(new ChannelHandler[0]));
                 }
             });
             ChannelFuture f = b.connect(host, port).sync();
@@ -70,6 +67,12 @@ public class SyncTask implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public static List<ChannelHandler> buildPipeline(VolatileStringStore store) {
+        return Arrays.asList(new VolatileStringStore.VolatileStringStoreDecoder(),
+                new VolatileStringStore.VolatileStringStoreEncoder(),
+                new SyncClientHandler(store));
     }
 
     private InetAddress lookupRandomPeer(String host) throws UnknownHostException {

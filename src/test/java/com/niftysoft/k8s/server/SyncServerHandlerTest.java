@@ -85,17 +85,6 @@ public class SyncServerHandlerTest {
         assertThat(((VolatileStringStore)obj).get("key")).isEqualTo("look what I have");
     }
 
-    @Test
-    public void testSyncServerHandlerPrintsExceptionAndClosesStreamOnBadProtocol() {
-        EmbeddedChannel channel = new EmbeddedChannel(new SyncServerHandler(localStore));
-
-        channel.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "BADREQUEST"));
-
-        assertThat(channel.isOpen()).isFalse();
-        assertThat(errContent.toString()).isNotBlank();
-
-    }
-
     private EmbeddedChannel constructTestStack(VolatileStringStore store) {
         return new EmbeddedChannel(
                 new VolatileStringStore.VolatileStringStoreDecoder(),
