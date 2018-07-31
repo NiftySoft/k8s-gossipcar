@@ -14,8 +14,6 @@ public class HeartbeatHandlerTest {
     public void testHeartbeatHandler() {
         EmbeddedChannel chan = new EmbeddedChannel(new HeartbeatHandler());
 
-        chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "anythingatall"));
-
         assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
         ByteBuf buf = chan.readOutbound();

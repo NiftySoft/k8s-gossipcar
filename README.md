@@ -1,6 +1,6 @@
 # Kubernetes Gossip Sidecar
 
-![https://gitlab.com/kalexmills/k8s-gossip-sidecar/commits/%{default_branch}](https://gitlab.com/kalexmills/k8s-gossip-sidecar/badges/master/pipeline.svg)
+![https://gitlab.com/kalexmills/k8s-gossip-sidecar/commits/master](https://gitlab.com/kalexmills/k8s-gossip-sidecar/badges/master/pipeline.svg)
 ![https://www.codacy.com/app/kalexmills/k8s-gossip-sidecar?utm_source=gitlab.com&amp;utm_medium=referral&amp;utm_content=kalexmills/k8s-gossip-sidecar&amp;utm_campaign=Badge_Grade](https://api.codacy.com/project/badge/Grade/144c0e99b8e843538c6e5c986b7d7941)
 ![https://app.codacy.com/project/kalexmills/k8s-gossip-sidecar/dashboard](https://img.shields.io/codacy/coverage/144c0e99b8e843538c6e5c986b7d7941.svg)
 
