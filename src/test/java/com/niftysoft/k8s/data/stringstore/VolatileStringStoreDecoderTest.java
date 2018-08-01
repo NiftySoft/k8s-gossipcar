@@ -11,107 +11,112 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class VolatileStringStoreDecoderTest {
 
-    @Test
-    public void testDecodesEmptyMap() {
-        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+  private static void writeEntry(ByteBuf buf, String key, String value, long version)
+      throws Exception {
+    buf.writeLong(VolatileStringStore.getHasher().apply(key));
+    buf.writeLong(version);
+    byte[] bytes = value.getBytes("UTF-8");
+    buf.writeInt(bytes.length);
+    buf.writeBytes(bytes);
+  }
 
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeInt(0);
+  @Test
+  public void testDecodesEmptyMap() {
+    EmbeddedChannel channel =
+        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
-        assertThat(channel.writeInbound(buf)).isTrue();
-        assertThat(channel.inboundMessages().size()).isEqualTo(1);
+    ByteBuf buf = Unpooled.buffer();
+    buf.writeInt(0);
 
-        Object obj = channel.readInbound();
+    assertThat(channel.writeInbound(buf)).isTrue();
+    assertThat(channel.inboundMessages().size()).isEqualTo(1);
 
-        assertThat(obj).hasSameClassAs(new VolatileStringStore());
-        assertThat(((VolatileStringStore)obj).isEmpty()).isTrue();
-    }
+    Object obj = channel.readInbound();
 
-    @Test
-    public void testDecodesSingletonMap() throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+    assertThat(obj).hasSameClassAs(new VolatileStringStore());
+    assertThat(((VolatileStringStore) obj).isEmpty()).isTrue();
+  }
 
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeInt(1);
-        writeEntry(buf,"key", "value", 12L);
+  @Test
+  public void testDecodesSingletonMap() throws Exception {
+    EmbeddedChannel channel =
+        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
-        assertThat(channel.writeInbound(buf)).isTrue();
-        assertThat(channel.inboundMessages().size()).isEqualTo(1);
+    ByteBuf buf = Unpooled.buffer();
+    buf.writeInt(1);
+    writeEntry(buf, "key", "value", 12L);
 
-        Object obj = channel.readInbound();
+    assertThat(channel.writeInbound(buf)).isTrue();
+    assertThat(channel.inboundMessages().size()).isEqualTo(1);
 
-        assertThat(obj).hasSameClassAs(new VolatileStringStore());
+    Object obj = channel.readInbound();
 
-        VolatileStringStore vss = (VolatileStringStore)obj;
-        assertThat(vss.size()).isEqualTo(1);
-        assertThat(vss.get("key")).isEqualTo("value");
-        assertThat(vss.getVersion("key")).isEqualTo(Optional.of(12L));
-    }
+    assertThat(obj).hasSameClassAs(new VolatileStringStore());
 
-    @Test
-    public void testDecodesMultiKeyMap() throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+    VolatileStringStore vss = (VolatileStringStore) obj;
+    assertThat(vss.size()).isEqualTo(1);
+    assertThat(vss.get("key")).isEqualTo("value");
+    assertThat(vss.getVersion("key")).isEqualTo(Optional.of(12L));
+  }
 
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeInt(5);
-        writeEntry(buf, "alpha", "beta", 5L);
-        writeEntry(buf, "gamma", "slamma", 17L);
-        writeEntry(buf, "imma", "mamma", 1L);
-        writeEntry(buf, "excelsior", "marvel", 0L);
-        writeEntry(buf, "try it", "not really", 10L);
+  @Test
+  public void testDecodesMultiKeyMap() throws Exception {
+    EmbeddedChannel channel =
+        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
-        assertThat(channel.writeInbound(buf)).isTrue();
-        assertThat(channel.inboundMessages().size()).isEqualTo(1);
+    ByteBuf buf = Unpooled.buffer();
+    buf.writeInt(5);
+    writeEntry(buf, "alpha", "beta", 5L);
+    writeEntry(buf, "gamma", "slamma", 17L);
+    writeEntry(buf, "imma", "mamma", 1L);
+    writeEntry(buf, "excelsior", "marvel", 0L);
+    writeEntry(buf, "try it", "not really", 10L);
 
-        Object obj = channel.readInbound();
+    assertThat(channel.writeInbound(buf)).isTrue();
+    assertThat(channel.inboundMessages().size()).isEqualTo(1);
 
-        assertThat(obj).hasSameClassAs(new VolatileStringStore());
+    Object obj = channel.readInbound();
 
-        VolatileStringStore vss = (VolatileStringStore)obj;
+    assertThat(obj).hasSameClassAs(new VolatileStringStore());
 
-        assertThat(vss.size()).isEqualTo(5);
-        assertThat(vss.get("alpha")).isEqualTo("beta");
-        assertThat(vss.get("gamma")).isEqualTo("slamma");
-        assertThat(vss.get("imma")).isEqualTo("mamma");
-        assertThat(vss.get("excelsior")).isEqualTo("marvel");
-        assertThat(vss.get("try it")).isEqualTo("not really");
+    VolatileStringStore vss = (VolatileStringStore) obj;
 
-        assertThat(vss.getVersion("alpha")).isEqualTo(Optional.of(5L));
-        assertThat(vss.getVersion("gamma")).isEqualTo(Optional.of(17L));
-        assertThat(vss.getVersion("imma")).isEqualTo(Optional.of(1L));
-        assertThat(vss.getVersion("excelsior")).isEqualTo(Optional.of(0L));
-        assertThat(vss.getVersion("try it")).isEqualTo(Optional.of(10L));
-    }
+    assertThat(vss.size()).isEqualTo(5);
+    assertThat(vss.get("alpha")).isEqualTo("beta");
+    assertThat(vss.get("gamma")).isEqualTo("slamma");
+    assertThat(vss.get("imma")).isEqualTo("mamma");
+    assertThat(vss.get("excelsior")).isEqualTo("marvel");
+    assertThat(vss.get("try it")).isEqualTo("not really");
 
-    // TODO: Fix this broken test
-    @Test
-    public void testDecodesUnicodeStrings() throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+    assertThat(vss.getVersion("alpha")).isEqualTo(Optional.of(5L));
+    assertThat(vss.getVersion("gamma")).isEqualTo(Optional.of(17L));
+    assertThat(vss.getVersion("imma")).isEqualTo(Optional.of(1L));
+    assertThat(vss.getVersion("excelsior")).isEqualTo(Optional.of(0L));
+    assertThat(vss.getVersion("try it")).isEqualTo(Optional.of(10L));
+  }
 
-        String unicodeKey = "\u0020\u1234 \u1045";
-        String unicodeValue = "\u2014 \u0134 \u1203";
+  // TODO: Fix this broken test
+  @Test
+  public void testDecodesUnicodeStrings() throws Exception {
+    EmbeddedChannel channel =
+        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
 
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeInt(1);
-        writeEntry(buf, unicodeKey, unicodeValue, 0L);
+    String unicodeKey = "\u0020\u1234 \u1045";
+    String unicodeValue = "\u2014 \u0134 \u1203";
 
-        assertThat(channel.writeInbound(buf)).isTrue();
-        assertThat(channel.inboundMessages().size()).isGreaterThanOrEqualTo(1);
+    ByteBuf buf = Unpooled.buffer();
+    buf.writeInt(1);
+    writeEntry(buf, unicodeKey, unicodeValue, 0L);
 
-        Object obj = channel.readInbound();
+    assertThat(channel.writeInbound(buf)).isTrue();
+    assertThat(channel.inboundMessages().size()).isGreaterThanOrEqualTo(1);
 
-        assertThat(obj).hasSameClassAs(new VolatileStringStore());
+    Object obj = channel.readInbound();
 
-        VolatileStringStore vss = (VolatileStringStore)obj;
-        assertThat(vss.size()).isEqualTo(1);
-        assertThat(vss.get(unicodeKey)).isEqualTo(unicodeValue);
-    }
+    assertThat(obj).hasSameClassAs(new VolatileStringStore());
 
-    private static void writeEntry(ByteBuf buf, String key, String value, long version) throws Exception {
-        buf.writeLong(VolatileStringStore.getHasher().apply(key));
-        buf.writeLong(version);
-        byte[] bytes = value.getBytes("UTF-8");
-        buf.writeInt(bytes.length);
-        buf.writeBytes(bytes);
-    }
+    VolatileStringStore vss = (VolatileStringStore) obj;
+    assertThat(vss.size()).isEqualTo(1);
+    assertThat(vss.get(unicodeKey)).isEqualTo(unicodeValue);
+  }
 }

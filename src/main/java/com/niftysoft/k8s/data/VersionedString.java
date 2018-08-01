@@ -6,36 +6,30 @@ package com.niftysoft.k8s.data;
  * @author K. Alex Mills
  */
 public class VersionedString {
-    /**
-     * Value to store
-     */
-    private String value;
-    /**
-     * Lamport logical clock value.
-     */
-    private long version;
+  /** Value to store */
+  private String value;
+  /** Lamport logical clock value. */
+  private long version;
 
-    public VersionedString(String str) {
-        this.value = str;
-    }
+  public VersionedString(String str) {
+    this.value = str;
+  }
 
-    public VersionedString() {
+  public VersionedString() {}
 
-    }
+  public long getVersion() {
+    return version;
+  }
 
-    public long getVersion() {
-        return version;
-    }
+  public void setVersion(long version) {
+    this.version = version;
+  }
 
-    public String getValue() {
-        return value;
-    }
+  public String getValue() {
+    return value;
+  }
 
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public void setVersion(long version) {
-        this.version = version;
-    }
+  public void setValue(String value) {
+    this.value = value;
+  }
 }

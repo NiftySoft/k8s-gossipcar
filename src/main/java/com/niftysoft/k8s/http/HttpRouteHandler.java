@@ -12,49 +12,47 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-/**
- * @author K. Alex Mills
- */
+/** @author K. Alex Mills */
 public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private Router<HttpEndpointHandler> router;
+  private Router<HttpEndpointHandler> router;
 
-    public HttpRouteHandler(Router<HttpEndpointHandler> router) {
-        this.router = router;
+  public HttpRouteHandler(Router<HttpEndpointHandler> router) {
+    this.router = router;
+  }
+
+  @Override
+  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+    FullHttpResponse resp = null;
+    boolean keepAlive = HttpUtil.isKeepAlive(req);
+
+    try {
+      if (HttpUtil.is100ContinueExpected(req)) {
+        resp = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
+        return;
+      }
+
+      RouteResult<HttpEndpointHandler> resolvedRoute = router.route(req.method(), req.uri());
+      if (resolvedRoute == null) {
+        resp = DefaultHttpHandler.respond404(req);
+        return;
+      }
+
+      resolvedRoute.target().setPathParams(resolvedRoute.pathParams());
+      resolvedRoute.target().setQueryParams(resolvedRoute.queryParams());
+
+      resp = resolvedRoute.target().handleRequest(req);
+
+      if (keepAlive) resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+
+    } finally {
+      if (resp == null) resp = new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
+
+      ChannelFuture future = ctx.writeAndFlush(resp);
+
+      if (!HttpUtil.isKeepAlive(req)) {
+        future.addListener(ChannelFutureListener.CLOSE);
+      }
     }
-
-    @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        FullHttpResponse resp = null;
-        boolean keepAlive = HttpUtil.isKeepAlive(req);
-
-        try {
-            if (HttpUtil.is100ContinueExpected(req)) {
-                resp = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
-                return;
-            }
-
-            RouteResult<HttpEndpointHandler> resolvedRoute = router.route(req.method(), req.uri());
-            if (resolvedRoute == null) {
-                resp = DefaultHttpHandler.respond404(req);
-                return;
-            }
-
-            resolvedRoute.target().setPathParams(resolvedRoute.pathParams());
-            resolvedRoute.target().setQueryParams(resolvedRoute.queryParams());
-
-            resp = resolvedRoute.target().handleRequest(req);
-
-            if (keepAlive) resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-
-        } finally {
-            if (resp == null) resp = new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
-
-            ChannelFuture future = ctx.writeAndFlush(resp);
-
-            if (!HttpUtil.isKeepAlive(req)) {
-                future.addListener(ChannelFutureListener.CLOSE);
-            }
-        }
-    }
+  }
 }

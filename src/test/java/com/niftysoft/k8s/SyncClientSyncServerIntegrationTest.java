@@ -13,106 +13,109 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SyncClientSyncServerIntegrationTest {
 
-    private VolatileStringStore clientStore;
-    private VolatileStringStore serverStore;
-    private EmbeddedChannel clientChan;
-    private EmbeddedChannel serverChan;
+  private VolatileStringStore clientStore;
+  private VolatileStringStore serverStore;
+  private EmbeddedChannel clientChan;
+  private EmbeddedChannel serverChan;
 
-    @Before
-    public void before() {
-        clientStore = new VolatileStringStore();
-        serverStore = new VolatileStringStore();
-    }
+  @Before
+  public void before() {
+    clientStore = new VolatileStringStore();
+    serverStore = new VolatileStringStore();
+  }
 
-    private void connect() {
-        clientChan = new EmbeddedChannel(SyncTask.buildPipeline(clientStore).toArray(new ChannelHandler[0]));
-        serverChan = new EmbeddedChannel(GossipServer.buildSyncPipeline(serverStore).toArray(new ChannelHandler[0]));
-    }
+  private void connect() {
+    clientChan =
+        new EmbeddedChannel(SyncTask.buildPipeline(clientStore).toArray(new ChannelHandler[0]));
+    serverChan =
+        new EmbeddedChannel(
+            GossipServer.buildSyncPipeline(serverStore).toArray(new ChannelHandler[0]));
+  }
 
-    @Test
-    public void testSyncOfEmptyStoreIsSuccessful() {
-        connect();
+  @Test
+  public void testSyncOfEmptyStoreIsSuccessful() {
+    connect();
 
-        pumpMessagesRoundTrip();
+    pumpMessagesRoundTrip();
 
-        assertChannelsEmpty();
-    }
+    assertChannelsEmpty();
+  }
 
-    @Test
-    public void testClientSyncSendsToServer() {
-        clientStore.put("key","value");
+  @Test
+  public void testClientSyncSendsToServer() {
+    clientStore.put("key", "value");
 
-        connect();
+    connect();
 
-        pumpMessagesRoundTrip();
+    pumpMessagesRoundTrip();
 
-        assertChannelsEmpty();
+    assertChannelsEmpty();
 
-        assertThat(serverStore.get("key")).isEqualTo("value");
-    }
+    assertThat(serverStore.get("key")).isEqualTo("value");
+  }
 
-    @Test
-    public void testServerSyncSendsToClient() {
-        serverStore.put("key", "value");
-        connect();
-        pumpMessagesRoundTrip();
-        assertChannelsEmpty();
+  @Test
+  public void testServerSyncSendsToClient() {
+    serverStore.put("key", "value");
+    connect();
+    pumpMessagesRoundTrip();
+    assertChannelsEmpty();
 
-        assertThat(clientStore.get("key")).isEqualTo("value");
-    }
+    assertThat(clientStore.get("key")).isEqualTo("value");
+  }
 
-    @Test
-    public void testClientValuesOverwritesServerValue() {
-        clientStore.put("key", "value0");
-        clientStore.put("key", "value1");
-        clientStore.put("key", "value2");
+  @Test
+  public void testClientValuesOverwritesServerValue() {
+    clientStore.put("key", "value0");
+    clientStore.put("key", "value1");
+    clientStore.put("key", "value2");
 
-        serverStore.put("key", "server-value");
+    serverStore.put("key", "server-value");
 
-        connect();
-        pumpMessagesRoundTrip();
-        assertChannelsEmpty();
+    connect();
+    pumpMessagesRoundTrip();
+    assertChannelsEmpty();
 
-        assertThat(serverStore.get("key")).isEqualTo("value2");
-    }
+    assertThat(serverStore.get("key")).isEqualTo("value2");
+  }
 
-    @Test
-    public void testServerValuesOverwritesClientValue() {
-        serverStore.put("key", "value0");
-        serverStore.put("key", "value1");
-        serverStore.put("key", "value2");
+  @Test
+  public void testServerValuesOverwritesClientValue() {
+    serverStore.put("key", "value0");
+    serverStore.put("key", "value1");
+    serverStore.put("key", "value2");
 
-        clientStore.put("key", "server-value");
+    clientStore.put("key", "server-value");
 
-        connect();
-        pumpMessagesRoundTrip();
-        assertChannelsEmpty();
+    connect();
+    pumpMessagesRoundTrip();
+    assertChannelsEmpty();
 
-        assertThat(serverStore.get("key")).isEqualTo("value2");
-    }
+    assertThat(serverStore.get("key")).isEqualTo("value2");
+  }
 
-    private void pumpMessagesRoundTrip() {
+  private void pumpMessagesRoundTrip() {
 
-        clientChan.flush();
-        assertThat(clientChan.outboundMessages()).isNotEmpty();
+    clientChan.flush();
+    assertThat(clientChan.outboundMessages()).isNotEmpty();
 
-        while(!clientChan.outboundMessages().isEmpty())
-            serverChan.writeInbound((ByteBuf)clientChan.readOutbound());
+    while (!clientChan.outboundMessages().isEmpty())
+      serverChan.writeInbound((ByteBuf) clientChan.readOutbound());
 
-        serverChan.flush();
-        assertThat(serverChan.outboundMessages()).isNotEmpty();
+    serverChan.flush();
+    assertThat(serverChan.outboundMessages()).isNotEmpty();
 
-        while(!serverChan.outboundMessages().isEmpty())
-            clientChan.writeInbound((ByteBuf)serverChan.readOutbound());
+    while (!serverChan.outboundMessages().isEmpty())
+      clientChan.writeInbound((ByteBuf) serverChan.readOutbound());
 
-        clientChan.flush();
-        serverChan.flush();
-    }
+    clientChan.flush();
+    serverChan.flush();
+  }
 
-    private void assertChannelsEmpty() {
-        assertThat(serverChan.outboundMessages()).isEmpty();
-        assertThat(serverChan.inboundMessages()).isEmpty();
-        assertThat(clientChan.outboundMessages()).isEmpty();
-        assertThat(clientChan.inboundMessages()).isEmpty();
-    }
+  private void assertChannelsEmpty() {
+    assertThat(serverChan.outboundMessages()).isEmpty();
+    assertThat(serverChan.inboundMessages()).isEmpty();
+    assertThat(clientChan.outboundMessages()).isEmpty();
+    assertThat(clientChan.inboundMessages()).isEmpty();
+  }
 }

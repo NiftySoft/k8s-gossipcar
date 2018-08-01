@@ -8,59 +8,57 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ConfigTest {
-    @Rule
-    public final EnvironmentVariables environmentVariables
-            = new EnvironmentVariables();
+  @Rule public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
-    @Before
-    public void before() {
-        environmentVariables.clear("PEER_PORT");
-        environmentVariables.clear("CLIENT_PORT");
-        environmentVariables.clear("SERVICE_DNS_NAME");
-        environmentVariables.clear("MY_POD_IP");
-        environmentVariables.clear("MY_POD_NAME");
-        environmentVariables.clear("MY_POD_NAMESPACE");
-    }
+  @Before
+  public void before() {
+    environmentVariables.clear("PEER_PORT");
+    environmentVariables.clear("CLIENT_PORT");
+    environmentVariables.clear("SERVICE_DNS_NAME");
+    environmentVariables.clear("MY_POD_IP");
+    environmentVariables.clear("MY_POD_NAME");
+    environmentVariables.clear("MY_POD_NAMESPACE");
+  }
 
-    @Test
-    public void testFromEnvVarsReadsFromSystemEnvironment() {
-        environmentVariables.set("PEER_PORT", "1337");
-        environmentVariables.set("CLIENT_PORT", "8080");
-        environmentVariables.set("SERVICE_DNS_NAME", "fat.tacos");
-        environmentVariables.set("MY_POD_IP", "10.4.4.2");
-        environmentVariables.set("MY_POD_NAME", "hargleblarg");
-        environmentVariables.set("MY_POD_NAMESPACE", "naamespaace");
+  @Test
+  public void testFromEnvVarsReadsFromSystemEnvironment() {
+    environmentVariables.set("PEER_PORT", "1337");
+    environmentVariables.set("CLIENT_PORT", "8080");
+    environmentVariables.set("SERVICE_DNS_NAME", "fat.tacos");
+    environmentVariables.set("MY_POD_IP", "10.4.4.2");
+    environmentVariables.set("MY_POD_NAME", "hargleblarg");
+    environmentVariables.set("MY_POD_NAMESPACE", "naamespaace");
 
-        Config config = Config.fromEnvVars();
+    Config config = Config.fromEnvVars();
 
-        assertThat(config.peerPort).isEqualTo(1337);
-        assertThat(config.clientPort).isEqualTo(8080);
-        assertThat(config.serviceDnsName).isEqualTo("fat.tacos");
-        assertThat(config.podIp).isEqualTo("10.4.4.2");
-        assertThat(config.podName).isEqualTo("hargleblarg");
-        assertThat(config.podNamespace).isEqualTo("naamespaace");
-    }
+    assertThat(config.peerPort).isEqualTo(1337);
+    assertThat(config.clientPort).isEqualTo(8080);
+    assertThat(config.serviceDnsName).isEqualTo("fat.tacos");
+    assertThat(config.podIp).isEqualTo("10.4.4.2");
+    assertThat(config.podName).isEqualTo("hargleblarg");
+    assertThat(config.podNamespace).isEqualTo("naamespaace");
+  }
 
-    @Test
-    public void testFromEnvVarsDefaults() {
-        Config config = Config.fromEnvVars();
+  @Test
+  public void testFromEnvVarsDefaults() {
+    Config config = Config.fromEnvVars();
 
-        Config configWithDefaults = new Config();
+    Config configWithDefaults = new Config();
 
-        assertThat(config.peerPort).isEqualTo(configWithDefaults.peerPort);
-        assertThat(config.clientPort).isEqualTo(configWithDefaults.clientPort);
-        assertThat(config.serviceDnsName).isEqualTo(configWithDefaults.serviceDnsName);
-    }
+    assertThat(config.peerPort).isEqualTo(configWithDefaults.peerPort);
+    assertThat(config.clientPort).isEqualTo(configWithDefaults.clientPort);
+    assertThat(config.serviceDnsName).isEqualTo(configWithDefaults.serviceDnsName);
+  }
 
-    @Test
-    public void testDefaults() {
-        Config config = new Config();
+  @Test
+  public void testDefaults() {
+    Config config = new Config();
 
-        assertThat(config.peerPort).isEqualTo(46747);
-        assertThat(config.clientPort).isEqualTo(80);
-        assertThat(config.serviceDnsName).isEqualTo("gossipSidecar.default");
-        assertThat(config.podIp).isEqualTo("127.0.0.1");
-        assertThat(config.podName).isEqualTo("gossipSidecar-0");
-        assertThat(config.podNamespace).isEqualTo("default");
-    }
+    assertThat(config.peerPort).isEqualTo(46747);
+    assertThat(config.clientPort).isEqualTo(80);
+    assertThat(config.serviceDnsName).isEqualTo("gossipSidecar.default");
+    assertThat(config.podIp).isEqualTo("127.0.0.1");
+    assertThat(config.podName).isEqualTo("gossipSidecar-0");
+    assertThat(config.podNamespace).isEqualTo("default");
+  }
 }
