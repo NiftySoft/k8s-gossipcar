@@ -138,8 +138,7 @@ public class VolatileStringStore implements Serializable {
 
   public static class VolatileStringStoreEncoder extends MessageToByteEncoder<VolatileStringStore> {
     @Override
-    protected void encode(ChannelHandlerContext ctx, VolatileStringStore in, ByteBuf out)
-        throws Exception {
+    protected void encode(ChannelHandlerContext ctx, VolatileStringStore in, ByteBuf out) {
       Set<Map.Entry<Long, VersionedString>> entrySet = in.internalMap.entrySet();
       out.writeInt(entrySet.size());
       for (Map.Entry<Long, VersionedString> entry : entrySet) {

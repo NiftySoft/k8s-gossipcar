@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.server;
 
-import com.niftysoft.k8s.client.SyncTask;
+import com.niftysoft.k8s.client.SyncInitiateTask;
 import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import com.niftysoft.k8s.http.HttpEndpointHandler;
@@ -16,6 +16,8 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.router.Router;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,14 +25,13 @@ import java.util.concurrent.TimeUnit;
 
 /** @author K. Alex Mills */
 public class GossipServer {
+
+  public static final EventExecutorGroup SYNC_GROUP = new DefaultEventExecutorGroup(1);
+
   private Config config;
 
   public GossipServer(Config config) {
     this.config = config;
-  }
-
-  public static List<ChannelHandler> buildSyncPipeline(VolatileStringStore store) {
-    return Arrays.asList(new GossipServerHandler(store));
   }
 
   public static List<ChannelHandler> buildHttpPipeline(VolatileStringStore store) {
@@ -53,6 +54,8 @@ public class GossipServer {
     // TODO: Allow the number of boss and worker threads to be configurable.
     VolatileStringStore myStore = new VolatileStringStore();
 
+    EventExecutorGroup syncGroup = new DefaultEventExecutorGroup(1);
+
     EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     EventLoopGroup peerWorkerGroup = new NioEventLoopGroup();
     EventLoopGroup clientWorkerGroup = new NioEventLoopGroup();
@@ -61,14 +64,7 @@ public class GossipServer {
       // Configure channel used to sync with peers.
       b.group(bossGroup, peerWorkerGroup)
           .channel(NioServerSocketChannel.class)
-          .childHandler(
-              new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                  // TODO: Enable sending object larger than 1 MB
-                  ch.pipeline().addLast(buildHttpPipeline(myStore).toArray(new ChannelHandler[0]));
-                }
-              })
+          .childHandler(new GossipServerInitializer(myStore))
           .option(ChannelOption.SO_BACKLOG, 128)
           .childOption(ChannelOption.SO_KEEPALIVE, true);
 
@@ -78,7 +74,7 @@ public class GossipServer {
       // TODO: Make delay and timing configurable.
       f1.channel()
           .eventLoop()
-          .scheduleAtFixedRate(new SyncTask(config, myStore), 5, 1, TimeUnit.SECONDS);
+          .scheduleAtFixedRate(new SyncInitiateTask(config, myStore), 5, 1, TimeUnit.SECONDS);
 
       // Configure HTTP channel used to receive data from clients.
       b = new ServerBootstrap();

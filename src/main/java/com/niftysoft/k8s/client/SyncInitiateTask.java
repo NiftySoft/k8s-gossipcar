@@ -2,11 +2,9 @@ package com.niftysoft.k8s.client;
 
 import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.server.GossipServer;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.BadClientSilencer;
@@ -16,10 +14,9 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.List;
 
 /** @author K. Alex Mills */
-public class SyncTask implements Runnable {
+public class SyncInitiateTask implements Runnable {
   private static final InternalLogger log =
       InternalLoggerFactory.getInstance(BadClientSilencer.class);
 
@@ -28,7 +25,7 @@ public class SyncTask implements Runnable {
   private final VolatileStringStore myStore;
   private final InetAddress podIp;
 
-  public SyncTask(Config config, VolatileStringStore store) {
+  public SyncInitiateTask(Config config, VolatileStringStore store) {
 
     this.myStore = store;
     this.hostname = config.serviceDnsName;
@@ -45,13 +42,6 @@ public class SyncTask implements Runnable {
     podIp = assignMeToPodIp;
   }
 
-  public static List<ChannelHandler> buildPipeline(VolatileStringStore store) {
-    return Arrays.asList(
-        new VolatileStringStore.VolatileStringStoreDecoder(),
-        new VolatileStringStore.VolatileStringStoreEncoder(),
-        new SyncClientHandler(store));
-  }
-
   @Override
   public void run() {
     try {
@@ -63,12 +53,8 @@ public class SyncTask implements Runnable {
       Bootstrap b = new Bootstrap();
       b.channel(NioSocketChannel.class);
       b.option(ChannelOption.SO_KEEPALIVE, true);
-      b.handler(
-          new ChannelInitializer<SocketChannel>() {
-            protected void initChannel(SocketChannel ch) throws Exception {
-              ch.pipeline().addLast(buildPipeline(myStore).toArray(new ChannelHandler[0]));
-            }
-          });
+      b.handler(new SyncInitiateTaskInitializer(myStore));
+
       ChannelFuture f = b.connect(host, port).sync();
 
       f.channel().closeFuture().sync();

@@ -20,7 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SyncClientHandlerTest {
+public class SyncInitiateHandlerTest {
 
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
   private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
@@ -115,6 +115,6 @@ public class SyncClientHandlerTest {
     return new EmbeddedChannel(
         new VolatileStringStore.VolatileStringStoreDecoder(),
         new VolatileStringStore.VolatileStringStoreEncoder(),
-        new SyncClientHandler(store));
+        new SyncInitiateHandler(store));
   }
 }

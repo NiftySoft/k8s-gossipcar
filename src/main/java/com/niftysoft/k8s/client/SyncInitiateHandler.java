@@ -11,13 +11,13 @@ import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
 /** @author K. Alex Mills */
-public class SyncClientHandler extends ChannelInboundHandlerAdapter {
+public class SyncInitiateHandler extends ChannelInboundHandlerAdapter {
   private static final InternalLogger log =
       InternalLoggerFactory.getInstance(BadClientSilencer.class);
 
   private final VolatileStringStore myStore;
 
-  public SyncClientHandler(VolatileStringStore store) {
+  public SyncInitiateHandler(VolatileStringStore store) {
     this.myStore = store;
   }
 
@@ -36,6 +36,7 @@ public class SyncClientHandler extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     assert (msg.getClass().equals(VolatileStringStore.class));
     log.debug("Received remote store during client-initiated sync.");
+
 
     VolatileStringStore otherStore = (VolatileStringStore) msg;
 

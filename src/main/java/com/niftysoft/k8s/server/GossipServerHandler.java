@@ -5,6 +5,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 
 import java.util.List;
 
@@ -53,7 +55,7 @@ public class GossipServerHandler extends ByteToMessageDecoder {
     ChannelPipeline p = ctx.pipeline();
     p.addLast("decoder", new VolatileStringStore.VolatileStringStoreDecoder());
     p.addLast("encoder", new VolatileStringStore.VolatileStringStoreEncoder());
-    p.addLast("handler", new SyncServerHandler(myStore));
+    p.addLast(GossipServer.SYNC_GROUP, "handler", new SyncServerHandler(myStore));
     p.remove(this);
   }
 
