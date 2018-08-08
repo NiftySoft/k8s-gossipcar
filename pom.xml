@@ -208,7 +208,7 @@
                         <argument>${project.build.directory}/jacoco-ut/jacoco.xml</argument>
                     </arguments>
                     <environmentVariables>
-                        <CODACY_PROJECT_TOKEN>144c0e99b8e843538c6e5c986b7d7941</CODACY_PROJECT_TOKEN>
+                        <CODACY_PROJECT_TOKEN>da2c8b14c72042e1874612c6161f5a79</CODACY_PROJECT_TOKEN>
                     </environmentVariables>
                 </configuration>
             </plugin>
