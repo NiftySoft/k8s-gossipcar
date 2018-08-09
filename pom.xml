@@ -172,6 +172,7 @@
                             <dataFile>target/jacoco.exec</dataFile>
                             <!-- Sets the output directory for the code coverage report. -->
                             <outputDirectory>target/jacoco-ut</outputDirectory>
+                            <skip>${skipTests}</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -196,6 +197,7 @@
                 </executions>
                 <configuration>
                     <executable>java</executable>
+                    <skip>${skipTests}</skip>
 
                     <arguments>
                         <argument>-jar</argument>
