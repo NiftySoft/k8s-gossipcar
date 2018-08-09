@@ -35,6 +35,7 @@ public class SyncInitiateHandler extends ChannelInboundHandlerAdapter {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     assert (msg.getClass().equals(VolatileStringStore.class));
+    ctx.channel().close();
     log.debug("Received remote store during client-initiated sync.");
 
 

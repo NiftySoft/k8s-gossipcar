@@ -28,6 +28,8 @@ public class GossipServer {
 
   private Config config;
 
+  private boolean isStarted = false;
+
   public GossipServer(Config config) {
     this.config = config;
   }
@@ -43,6 +45,8 @@ public class GossipServer {
                 .addRoute(HttpMethod.PUT, "/map", mapHandler)),
         new BadClientSilencer());
   }
+
+  public boolean isStarted() { return isStarted; }
 
   public static void main(String[] args) throws Exception {
     new GossipServer(Config.fromEnvVars()).run();
@@ -91,6 +95,7 @@ public class GossipServer {
       // Start listening for clients
       ChannelFuture f2 = b.bind(config.clientPort).sync();
 
+      isStarted = true;
       f1.channel().closeFuture().sync();
       f2.channel().closeFuture().sync();
     } finally {
