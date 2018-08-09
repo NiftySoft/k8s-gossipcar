@@ -4,9 +4,9 @@ import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.embedded.EmbeddedChannel;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
+import org.junit.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -35,7 +35,7 @@ public class GossipServerHandlerTest {
 
   @Test
   public void testGossipServerHandlerSwitchesToSyncHandlersAndSetsEncoderAndDecoder() {
-    EmbeddedChannel chan = constructTestStack(vss);
+    EmbeddedChannel chan = constructTestStack(vss, null);
 
     chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "SY"));
     assertThat(chan.pipeline().get("handler")).hasSameClassAs(new SyncServerHandler(null));
@@ -47,7 +47,7 @@ public class GossipServerHandlerTest {
 
   @Test
   public void testGossipServerHandlerRespondsToHeartBeat() {
-    EmbeddedChannel chan = constructTestStack(vss);
+    EmbeddedChannel chan = constructTestStack(vss, null);
 
     chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "HB"));
 
@@ -58,17 +58,19 @@ public class GossipServerHandlerTest {
   public void testGossipServerHandlerRespondsToSyncRequest() {
     VolatileStringStore localStore = new VolatileStringStore();
 
-    EmbeddedChannel chan = constructTestStack(localStore);
+    EmbeddedChannel chan = constructTestStack(localStore, null);
 
     chan.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "SY"));
     chan.writeInbound(localStore);
+
+    chan.flush();
 
     assertThat(chan.outboundMessages().size()).isGreaterThanOrEqualTo(1);
   }
 
   @Test
   public void testGossipServerPrintsExceptionAndClosesStreamOnBadProtocol() {
-    EmbeddedChannel channel = constructTestStack(vss);
+    EmbeddedChannel channel = constructTestStack(vss, null);
 
     channel.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "XX"));
 
@@ -78,7 +80,7 @@ public class GossipServerHandlerTest {
 
   @Test
   public void testGossipServerIsPatientAndWaitsForMultipleBytes() throws InterruptedException {
-    EmbeddedChannel channel = constructTestStack(vss);
+    EmbeddedChannel channel = constructTestStack(vss, null);
 
     channel.writeInbound(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "H"));
 
@@ -89,7 +91,7 @@ public class GossipServerHandlerTest {
     assertThat(channel.outboundMessages().size()).isGreaterThanOrEqualTo(1);
   }
 
-  public EmbeddedChannel constructTestStack(VolatileStringStore store) {
-    return new EmbeddedChannel(new GossipServerHandler(store));
+  public EmbeddedChannel constructTestStack(VolatileStringStore store, EventExecutorGroup syncGroup) {
+    return new EmbeddedChannel(new GossipServerHandler(store, syncGroup));
   }
 }

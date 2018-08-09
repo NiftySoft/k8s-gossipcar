@@ -14,9 +14,11 @@ import java.util.List;
 public class GossipServerHandler extends ByteToMessageDecoder {
 
   private final VolatileStringStore myStore;
+  private final EventExecutorGroup syncGroup;
 
-  public GossipServerHandler(VolatileStringStore store) {
+  public GossipServerHandler(VolatileStringStore store, EventExecutorGroup syncGroup) {
     this.myStore = store;
+    this.syncGroup = syncGroup;
   }
 
   @Override
@@ -55,7 +57,7 @@ public class GossipServerHandler extends ByteToMessageDecoder {
     ChannelPipeline p = ctx.pipeline();
     p.addLast("decoder", new VolatileStringStore.VolatileStringStoreDecoder());
     p.addLast("encoder", new VolatileStringStore.VolatileStringStoreEncoder());
-    p.addLast(GossipServer.SYNC_GROUP, "handler", new SyncServerHandler(myStore));
+    p.addLast(syncGroup, "handler", new SyncServerHandler(myStore));
     p.remove(this);
   }
 

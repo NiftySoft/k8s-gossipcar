@@ -26,8 +26,6 @@ import java.util.concurrent.TimeUnit;
 /** @author K. Alex Mills */
 public class GossipServer {
 
-  public static final EventExecutorGroup SYNC_GROUP = new DefaultEventExecutorGroup(1);
-
   private Config config;
 
   public GossipServer(Config config) {
@@ -64,7 +62,7 @@ public class GossipServer {
       // Configure channel used to sync with peers.
       b.group(bossGroup, peerWorkerGroup)
           .channel(NioServerSocketChannel.class)
-          .childHandler(new GossipServerInitializer(myStore))
+          .childHandler(new GossipServerInitializer(myStore, syncGroup))
           .option(ChannelOption.SO_BACKLOG, 128)
           .childOption(ChannelOption.SO_KEEPALIVE, true);
 
@@ -74,7 +72,7 @@ public class GossipServer {
       // TODO: Make delay and timing configurable.
       f1.channel()
           .eventLoop()
-          .scheduleAtFixedRate(new SyncInitiateTask(config, myStore), 5, 1, TimeUnit.SECONDS);
+          .scheduleAtFixedRate(new SyncInitiateTask(config, myStore, syncGroup), 5, 1, TimeUnit.SECONDS);
 
       // Configure HTTP channel used to receive data from clients.
       b = new ServerBootstrap();
@@ -98,6 +96,8 @@ public class GossipServer {
     } finally {
       peerWorkerGroup.shutdownGracefully();
       bossGroup.shutdownGracefully();
+      clientWorkerGroup.shutdownGracefully();
+      syncGroup.shutdownGracefully();
     }
   }
 }

@@ -8,6 +8,7 @@ import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.BadClientSilencer;
+import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -23,10 +24,12 @@ public class SyncInitiateTask implements Runnable {
   private final int port;
   private final String hostname;
   private final VolatileStringStore myStore;
+  private final EventExecutorGroup syncGroup;
   private final InetAddress podIp;
 
-  public SyncInitiateTask(Config config, VolatileStringStore store) {
+  public SyncInitiateTask(Config config, VolatileStringStore store, EventExecutorGroup syncGroup) {
 
+    this.syncGroup = syncGroup;
     this.myStore = store;
     this.hostname = config.serviceDnsName;
     this.port = config.peerPort;
@@ -53,7 +56,7 @@ public class SyncInitiateTask implements Runnable {
       Bootstrap b = new Bootstrap();
       b.channel(NioSocketChannel.class);
       b.option(ChannelOption.SO_KEEPALIVE, true);
-      b.handler(new SyncInitiateTaskInitializer(myStore));
+      b.handler(new SyncInitiateTaskInitializer(myStore, syncGroup));
 
       ChannelFuture f = b.connect(host, port).sync();
 
