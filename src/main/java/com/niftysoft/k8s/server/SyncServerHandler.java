@@ -21,16 +21,21 @@ public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileStrin
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) {}
+  public void channelActive(ChannelHandlerContext ctx) {
+    log.debug("Remote sync initiated by peer. Receiving store.");
+  }
 
   @Override
   public void channelRead0(ChannelHandlerContext ctx, VolatileStringStore otherStore) {
-    log.debug("Remote sync initiated by peer. Receiving store.");
-
-    myStore.mergeAllFresher(otherStore);
+    log.debug("Store received.");
 
     synchronized (myStore) {
-      log.debug("Writing store to remote.");
+      myStore.mergeAllFresher(otherStore);
+    }
+
+    log.debug("Writing store to remote peer.");
+
+    synchronized (myStore) {
       ChannelFuture future = ctx.writeAndFlush(myStore);
       future.addListener(ChannelFutureListener.CLOSE);
     }

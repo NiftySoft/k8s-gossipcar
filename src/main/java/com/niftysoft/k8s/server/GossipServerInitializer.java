@@ -11,15 +11,15 @@ public class GossipServerInitializer extends ChannelInitializer<Channel> {
     private EventExecutorGroup syncGroup;
 
     public GossipServerInitializer(VolatileStringStore vss, EventExecutorGroup syncGroup) {
-
         this.vss = vss;
         this.syncGroup = syncGroup;
     }
 
     @Override
     public void initChannel(Channel ch) throws Exception {
-        // TODO: Enable sending object larger than 1 MB
-        ch.pipeline().addLast(new GossipServerHandler(vss, syncGroup));
+        ch.pipeline().addLast("decoder", new VolatileStringStore.VolatileStringStoreDecoder())
+                     .addLast("encoder", new VolatileStringStore.VolatileStringStoreEncoder())
+                     .addLast(syncGroup, "handler", new SyncServerHandler(vss));
     }
 
 }

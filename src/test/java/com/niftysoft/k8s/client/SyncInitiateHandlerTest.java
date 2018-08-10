@@ -66,13 +66,9 @@ public class SyncInitiateHandlerTest {
 
     EmbeddedChannel channel = constructTestStack(store);
 
-    assertThat(channel.outboundMessages().size()).isEqualTo(2);
+    assertThat(channel.outboundMessages().size()).isEqualTo(1);
 
     ByteBuf buf = channel.readOutbound();
-
-    assertThat(buf.readableBytes()).isEqualTo(2);
-    assertThat(buf.readByte()).isEqualTo((byte) 'S');
-    assertThat(buf.readByte()).isEqualTo((byte) 'Y');
   }
 
   @Test
@@ -83,9 +79,7 @@ public class SyncInitiateHandlerTest {
 
     EmbeddedChannel channel = constructTestStack(testStore);
 
-    assertThat(channel.outboundMessages().size()).isEqualTo(2);
-
-    channel.readOutbound(); // Discard the magic bytes for this test.
+    assertThat(channel.outboundMessages().size()).isEqualTo(1);
 
     EmbeddedChannel decoderChan =
         new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());

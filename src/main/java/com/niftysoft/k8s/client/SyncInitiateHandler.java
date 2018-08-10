@@ -24,7 +24,6 @@ public class SyncInitiateHandler extends ChannelInboundHandlerAdapter {
   @Override
   public void channelActive(ChannelHandlerContext ctx) {
     log.debug("Initiating sync.");
-    ctx.write(ByteBufUtil.writeAscii(ByteBufAllocator.DEFAULT, "SY"));
 
     synchronized (myStore) { // Obtain write lock.
       log.debug("Writing local store during sync initiation.");

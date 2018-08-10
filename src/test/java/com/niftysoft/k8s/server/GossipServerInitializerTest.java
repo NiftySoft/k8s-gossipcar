@@ -10,11 +10,11 @@ import static org.mockito.Mockito.mock;
 public class GossipServerInitializerTest {
 
     @Test
-    public void testGossipServerInitializerAddsGossipServerHandlerToPipeline() {
+    public void testGossipServerInitializerAddsSyncServerHandlerToPipeline() {
         VolatileStringStore vss = mock(VolatileStringStore.class);
 
         EmbeddedChannel chan = new EmbeddedChannel(new GossipServerInitializer(vss, null));
 
-        assertThat(chan.pipeline().removeLast()).hasSameClassAs(new GossipServerHandler(vss, null));
+        assertThat(chan.pipeline().removeLast()).hasSameClassAs(new SyncServerHandler(vss));
     }
 }
