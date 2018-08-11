@@ -6,8 +6,6 @@ import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import com.niftysoft.k8s.server.GossipServer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import io.netty.util.concurrent.EventExecutorGroup;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

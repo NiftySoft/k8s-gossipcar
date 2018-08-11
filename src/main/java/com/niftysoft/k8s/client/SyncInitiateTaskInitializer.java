@@ -3,7 +3,6 @@ package com.niftysoft.k8s.client;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
-import io.netty.util.concurrent.EventExecutorGroup;
 
 public class SyncInitiateTaskInitializer extends ChannelInitializer<Channel> {
 

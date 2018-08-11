@@ -1,16 +1,9 @@
 package com.niftysoft.k8s;
 
-import com.niftysoft.k8s.client.SyncInitiateTask;
 import com.niftysoft.k8s.client.SyncInitiateTaskInitializer;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
-import com.niftysoft.k8s.server.GossipServer;
 import com.niftysoft.k8s.server.GossipServerInitializer;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.DefaultChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import io.netty.util.concurrent.EventExecutorGroup;
 import org.junit.Before;
 import org.junit.Test;
 

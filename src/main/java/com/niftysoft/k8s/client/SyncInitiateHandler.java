@@ -1,7 +1,9 @@
 package com.niftysoft.k8s.client;
 
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
-import io.netty.channel.*;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
