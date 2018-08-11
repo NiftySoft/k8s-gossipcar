@@ -20,6 +20,6 @@ public class SyncInitiateTaskInitializer extends ChannelInitializer<Channel> {
         ch.pipeline()
             .addLast(new VolatileStringStore.VolatileStringStoreDecoder())
             .addLast(new VolatileStringStore.VolatileStringStoreEncoder())
-            .addLast(syncGroup, new SyncInitiateHandler(vss));
+            .addLast(new SyncInitiateHandler(vss));
     }
 }

@@ -1,5 +1,7 @@
 package com.niftysoft.k8s.server;
 
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import com.niftysoft.k8s.client.SyncInitiateTaskInitializer;
 import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
@@ -16,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 public class GossipServerTest {
@@ -77,9 +80,40 @@ public class GossipServerTest {
     t.join();
   }
 
+  @Test
+  public void testGossipServerMainRespondsToHttpClient() throws Exception {
+    Config testConfig = constructTestConfig();
+    testConfig.serviceDnsName = "example.com"; // Ensure the server doesn't end up talking to itself.
+    testConfig.clientPort = 12345;
+    GossipServer server = new GossipServer(testConfig);
+    Runnable run = constructGossipRunnable(server);
+
+    Thread t = new Thread(run);
+    t.start();
+
+    do {
+      Thread.sleep(10);
+    } while (!server.isStarted());
+
+
+    HttpResponse<String> resp = Unirest.put("http://localhost:12345/map?k=123")
+            .body("Hello there.")
+            .asString();
+
+    assertThat(resp.getBody()).isEmpty();
+
+    resp = Unirest.get("http://localhost:12345/map?k=123")
+            .asString();
+
+    assertThat(resp.getBody()).isEqualTo("123=Hello there.\n");
+
+    t.interrupt();
+    t.join();
+  }
+
   private Config constructTestConfig() {
     Config config = new Config();
-    config.clientPort = 8080;
+    config.clientPort = 12345;
     config.serviceDnsName = "localhost";
     return config;
   }

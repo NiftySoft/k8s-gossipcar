@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: gossip-sidecar
-        image: registry.gitlab.com/kalexmills/k8s-gossip-sidecar:1.0-SNAPSHOT
+        image: registry.gitlab.com/kalexmills/k8s-gossip-sidecar:v0.1.0
         imagePullPolicy: Always
         ports:
         - name: client-http
@@ -48,7 +48,7 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 20
       imagePullSecrets:
-        - name: regcred
+        - name: gitlab-key
 ---
 apiVersion: v1
 kind: Service

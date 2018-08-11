@@ -6,6 +6,7 @@ import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import com.niftysoft.k8s.http.HttpEndpointHandler;
 import com.niftysoft.k8s.http.HttpRouteHandler;
 import com.niftysoft.k8s.http.MapHandler;
+import com.sun.media.jfxmedia.logging.Logger;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -16,8 +17,14 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.router.Router;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
+import io.netty.util.internal.logging.InternalLogLevel;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,13 +66,17 @@ public class GossipServer {
     EventExecutorGroup syncGroup = new DefaultEventExecutorGroup(1);
 
     EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    EventLoopGroup peerWorkerGroup = new NioEventLoopGroup();
-    EventLoopGroup clientWorkerGroup = new NioEventLoopGroup();
+    EventLoopGroup peerWorkerGroup = new NioEventLoopGroup(1);
+
+    EventLoopGroup httpGroup = new NioEventLoopGroup(1);
+    EventLoopGroup clientWorkerGroup = new NioEventLoopGroup(1);
+
     try {
       ServerBootstrap b = new ServerBootstrap();
       // Configure channel used to sync with peers.
       b.group(bossGroup, peerWorkerGroup)
           .channel(NioServerSocketChannel.class)
+          .handler(new LoggingHandler("SYNC", LogLevel.INFO))
           .childHandler(new GossipServerInitializer(myStore, syncGroup))
           .option(ChannelOption.SO_BACKLOG, 128)
           .childOption(ChannelOption.SO_KEEPALIVE, true);
@@ -80,17 +91,18 @@ public class GossipServer {
 
       // Configure HTTP channel used to receive data from clients.
       b = new ServerBootstrap();
-      b.group(bossGroup, clientWorkerGroup)
+      b.group(httpGroup, clientWorkerGroup)
           .channel(NioServerSocketChannel.class)
+          .handler(new LoggingHandler("HTTP", LogLevel.INFO))
           .childHandler(
               new ChannelInitializer<SocketChannel>() {
                 @Override
-                public void initChannel(SocketChannel ch) throws Exception {
+                public void initChannel(SocketChannel ch) {
                   ch.pipeline().addLast(buildHttpPipeline(myStore).toArray(new ChannelHandler[0]));
                 }
               })
-          .childOption(ChannelOption.TCP_NODELAY, java.lang.Boolean.TRUE)
-          .childOption(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE);
+          .option(ChannelOption.SO_BACKLOG, 128)
+          .childOption(ChannelOption.TCP_NODELAY, java.lang.Boolean.TRUE);
 
       // Start listening for clients
       ChannelFuture f2 = b.bind(config.clientPort).sync();
@@ -102,6 +114,7 @@ public class GossipServer {
       peerWorkerGroup.shutdownGracefully();
       bossGroup.shutdownGracefully();
       clientWorkerGroup.shutdownGracefully();
+      httpGroup.shutdownGracefully();
       syncGroup.shutdownGracefully();
     }
   }

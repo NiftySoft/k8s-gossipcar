@@ -1,6 +1,7 @@
 FROM openjdk:8-jre-alpine
 MAINTAINER K. Alex Mills <k.alex.mills@gmail.com>
 
+EXPOSE 80
 EXPOSE 46747
 
 COPY target/lib           /usr/share/gossipcar/lib

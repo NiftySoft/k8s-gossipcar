@@ -139,19 +139,25 @@ public class MapHandlerTest {
 
   @Test
   public void testMapHandlerResponds404ToNonGetOrPutRequests() {
-    EmbeddedChannel chan = constructTestStack(vss);
+    EmbeddedChannel chan;
 
+    chan = constructTestStack(vss);
     assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.POST);
+    chan = constructTestStack(vss);
     assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.DELETE);
+    chan = constructTestStack(vss);
     assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.CONNECT);
+    chan = constructTestStack(vss);
     assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.HEAD);
+    chan = constructTestStack(vss);
     assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.OPTIONS);
+    chan = constructTestStack(vss);
     assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.PATCH);
+    chan = constructTestStack(vss);
     assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.TRACE);
   }
 
-  private void assertRequestTypeReturns404WithEmptyContent(
-      EmbeddedChannel chan, HttpMethod method) {
+  private void assertRequestTypeReturns404WithEmptyContent(EmbeddedChannel chan, HttpMethod method) {
     FullHttpRequest req = constructRequest();
 
     req.setUri("/a?k=key");

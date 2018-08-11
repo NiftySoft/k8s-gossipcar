@@ -5,14 +5,13 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.BadClientSilencer;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
 /** @author K. Alex Mills */
 public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileStringStore> {
   private static final InternalLogger log =
-      InternalLoggerFactory.getInstance(BadClientSilencer.class);
+      InternalLoggerFactory.getInstance(SyncServerHandler.class);
 
   private final VolatileStringStore myStore;
 

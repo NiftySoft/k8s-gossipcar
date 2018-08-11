@@ -59,16 +59,20 @@ public class HttpRouteHandlerTest {
     req1.setUri("/this/is/a/route");
     req1.setMethod(HttpMethod.GET);
 
-    FullHttpRequest req2 = constructRequest();
-    req2.setUri("/another/route");
-    req2.setMethod(HttpMethod.PUT);
-
     chan.writeInbound(req1);
-    chan.writeInbound(req2);
     chan.flush();
 
     verify(endpoint1).handleRequest(requestCaptor.capture());
     assertThat(requestCaptor.getValue()).isEqualTo(req1);
+
+    chan = constructTestStack(router);
+
+    FullHttpRequest req2 = constructRequest();
+    req2.setUri("/another/route");
+    req2.setMethod(HttpMethod.PUT);
+
+    chan.writeInbound(req2);
+    chan.flush();
 
     verify(endpoint2).handleRequest(requestCaptor.capture());
     assertThat(requestCaptor.getValue()).isEqualTo(req2);

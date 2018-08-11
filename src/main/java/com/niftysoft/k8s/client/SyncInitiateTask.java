@@ -4,10 +4,11 @@ import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import com.niftysoft.k8s.util.PeerUtil;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.BadClientSilencer;
 import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -18,7 +19,7 @@ import java.net.UnknownHostException;
 /** @author K. Alex Mills */
 public class SyncInitiateTask implements Runnable {
   private static final InternalLogger log =
-      InternalLoggerFactory.getInstance(BadClientSilencer.class);
+      InternalLoggerFactory.getInstance(SyncInitiateTask.class);
 
   private final int port;
   private final String hostname;

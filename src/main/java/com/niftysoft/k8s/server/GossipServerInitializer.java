@@ -19,7 +19,7 @@ public class GossipServerInitializer extends ChannelInitializer<Channel> {
     public void initChannel(Channel ch) throws Exception {
         ch.pipeline().addLast("decoder", new VolatileStringStore.VolatileStringStoreDecoder())
                      .addLast("encoder", new VolatileStringStore.VolatileStringStoreEncoder())
-                     .addLast(syncGroup, "handler", new SyncServerHandler(vss));
+                     .addLast("handler", new SyncServerHandler(vss));
     }
 
 }
