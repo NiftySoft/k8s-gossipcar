@@ -24,11 +24,9 @@ public class SyncInitiateTask implements Runnable {
   private final int port;
   private final String hostname;
   private final VolatileStringStore myStore;
-  private final EventExecutorGroup syncGroup;
   private final InetAddress podIp;
 
-  public SyncInitiateTask(Config config, VolatileStringStore store, EventExecutorGroup syncGroup) {
-    this.syncGroup = syncGroup;
+  public SyncInitiateTask(Config config, VolatileStringStore store) {
     this.myStore = store;
     this.hostname = config.serviceDnsName;
     this.port = config.peerPort;
@@ -52,13 +50,12 @@ public class SyncInitiateTask implements Runnable {
 
       if (host == null) return; // No friends. :-(
 
-      // TODO: MUST set group here!
       Bootstrap b = new Bootstrap();
       EventLoopGroup workerGroup = new NioEventLoopGroup();
       b.channel(NioSocketChannel.class);
       b.group(workerGroup);
       b.option(ChannelOption.SO_KEEPALIVE, true);
-      b.handler(new SyncInitiateTaskInitializer(myStore, syncGroup));
+      b.handler(new SyncInitiateTaskInitializer(myStore));
 
       ChannelFuture f = b.connect(host, port).sync();
 

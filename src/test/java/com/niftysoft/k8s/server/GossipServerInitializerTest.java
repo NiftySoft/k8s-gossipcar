@@ -13,7 +13,7 @@ public class GossipServerInitializerTest {
     public void testGossipServerInitializerAddsSyncServerHandlerToPipeline() {
         VolatileStringStore vss = mock(VolatileStringStore.class);
 
-        EmbeddedChannel chan = new EmbeddedChannel(new GossipServerInitializer(vss, null));
+        EmbeddedChannel chan = new EmbeddedChannel(new GossipServerInitializer(vss));
 
         assertThat(chan.pipeline().removeLast()).hasSameClassAs(new SyncServerHandler(vss));
     }

@@ -35,9 +35,13 @@ public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileStrin
     log.debug("Writing store to remote peer.");
 
     synchronized (myStore) {
-      ChannelFuture future = ctx.writeAndFlush(myStore);
+      ChannelFuture future = ctx.write(myStore);
       future.addListener(ChannelFutureListener.CLOSE);
     }
+  }
+
+  public void channelReadComplete(ChannelHandlerContext ctx) {
+    ctx.flush();
   }
 
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

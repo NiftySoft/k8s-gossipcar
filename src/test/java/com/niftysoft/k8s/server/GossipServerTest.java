@@ -40,13 +40,16 @@ public class GossipServerTest {
     Runnable run = constructGossipRunnable(server);
 
     Thread t = new Thread(run);
-    t.start();
+    try {
+      t.start();
 
-    do {
-      Thread.sleep(10);
-    } while (!server.isStarted());
-    t.interrupt();
-    t.join();
+      do {
+        Thread.sleep(10);
+      } while (!server.isStarted());
+    } finally {
+      t.interrupt();
+      t.join();
+    }
   }
 
   @Test
@@ -57,27 +60,29 @@ public class GossipServerTest {
     Runnable run = constructGossipRunnable(server);
 
     Thread t = new Thread(run);
-    t.start();
+    try {
+      t.start();
 
-    do {
-      Thread.sleep(10);
-    } while (!server.isStarted());
+      do {
+        Thread.sleep(10);
+      } while (!server.isStarted());
 
-    VolatileStringStore vss = new VolatileStringStore();
-    vss.put("key", "value");
+      VolatileStringStore vss = new VolatileStringStore();
+      vss.put("key", "value");
 
-    EventExecutorGroup clientSyncGroup = new DefaultEventExecutorGroup(1);
-    EventLoopGroup group = new NioEventLoopGroup(1);
-    Bootstrap b = new Bootstrap();
-    b.group(group);
-    b.channel(NioSocketChannel.class);
-    b.option(ChannelOption.SO_KEEPALIVE, true);
-    b.handler(new SyncInitiateTaskInitializer(vss, clientSyncGroup));
+      EventExecutorGroup clientSyncGroup = new DefaultEventExecutorGroup(1);
+      EventLoopGroup group = new NioEventLoopGroup(1);
+      Bootstrap b = new Bootstrap();
+      b.group(group);
+      b.channel(NioSocketChannel.class);
+      b.option(ChannelOption.SO_KEEPALIVE, true);
+      b.handler(new SyncInitiateTaskInitializer(vss));
 
-    b.connect("localhost", testConfig.peerPort).sync().channel().closeFuture().sync();
-
-    t.interrupt();
-    t.join();
+      b.connect("localhost", testConfig.peerPort).sync().channel().closeFuture().sync();
+    } finally {
+      t.interrupt();
+      t.join();
+    }
   }
 
   @Test
@@ -89,26 +94,29 @@ public class GossipServerTest {
     Runnable run = constructGossipRunnable(server);
 
     Thread t = new Thread(run);
-    t.start();
+    try {
+      t.start();
 
-    do {
-      Thread.sleep(10);
-    } while (!server.isStarted());
+      do {
+        Thread.sleep(10);
+      } while (!server.isStarted());
 
 
-    HttpResponse<String> resp = Unirest.put("http://localhost:12345/map?k=123")
-            .body("Hello there.")
-            .asString();
+      HttpResponse<String> resp = Unirest.put("http://localhost:12345/map?k=123")
+              .body("Hello there.")
+              .asString();
 
-    assertThat(resp.getBody()).isEmpty();
+      assertThat(resp.getBody()).isEmpty();
 
-    resp = Unirest.get("http://localhost:12345/map?k=123")
-            .asString();
+      resp = Unirest.get("http://localhost:12345/map?k=123")
+              .asString();
 
-    assertThat(resp.getBody()).isEqualTo("123=Hello there.\n");
+      assertThat(resp.getBody()).isEqualTo("123=Hello there.\n");
 
-    t.interrupt();
-    t.join();
+    } finally {
+      t.interrupt();
+      t.join();
+    }
   }
 
   private Config constructTestConfig() {

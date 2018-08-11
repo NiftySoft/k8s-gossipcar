@@ -29,7 +29,7 @@ spec:
         - name: CLIENT_PORT
           value: "80"
         - name: SERVICE_DNS_NAME
-          value: "gossip-sidecar.default"
+          value: "gossip-sidecar.default.svc.cluster.local"
         - name: MY_POD_NAME
           valueFrom:
             fieldRef:

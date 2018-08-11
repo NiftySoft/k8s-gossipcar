@@ -23,9 +23,6 @@ public class SyncClientSyncServerIntegrationTest {
     private EmbeddedChannel clientChan;
     private EmbeddedChannel serverChan;
 
-    private static EventExecutorGroup serverGroup = new DefaultEventExecutorGroup(1);
-    private static EventExecutorGroup clientGroup = new DefaultEventExecutorGroup(1);
-
     @Before
     public void before() {
         clientStore = new VolatileStringStore();
@@ -34,9 +31,9 @@ public class SyncClientSyncServerIntegrationTest {
 
     private void connect() {
         clientChan =
-                new EmbeddedChannel(new SyncInitiateTaskInitializer(clientStore, serverGroup));
+                new EmbeddedChannel(new SyncInitiateTaskInitializer(clientStore));
         serverChan =
-                new EmbeddedChannel(new GossipServerInitializer(serverStore, clientGroup));
+                new EmbeddedChannel(new GossipServerInitializer(serverStore));
     }
 
     @Test

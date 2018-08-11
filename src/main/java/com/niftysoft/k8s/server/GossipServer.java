@@ -6,7 +6,6 @@ import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import com.niftysoft.k8s.http.HttpEndpointHandler;
 import com.niftysoft.k8s.http.HttpRouteHandler;
 import com.niftysoft.k8s.http.MapHandler;
-import com.sun.media.jfxmedia.logging.Logger;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -21,10 +20,6 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
-import io.netty.util.internal.logging.InternalLogLevel;
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,12 +58,8 @@ public class GossipServer {
     // TODO: Allow the number of boss and worker threads to be configurable.
     VolatileStringStore myStore = new VolatileStringStore();
 
-    EventExecutorGroup syncGroup = new DefaultEventExecutorGroup(1);
-
-    EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+    EventLoopGroup bossGroup = new NioEventLoopGroup(2);
     EventLoopGroup peerWorkerGroup = new NioEventLoopGroup(1);
-
-    EventLoopGroup httpGroup = new NioEventLoopGroup(1);
     EventLoopGroup clientWorkerGroup = new NioEventLoopGroup(1);
 
     try {
@@ -77,7 +68,7 @@ public class GossipServer {
       b.group(bossGroup, peerWorkerGroup)
           .channel(NioServerSocketChannel.class)
           .handler(new LoggingHandler("SYNC", LogLevel.INFO))
-          .childHandler(new GossipServerInitializer(myStore, syncGroup))
+          .childHandler(new GossipServerInitializer(myStore))
           .option(ChannelOption.SO_BACKLOG, 128)
           .childOption(ChannelOption.SO_KEEPALIVE, true);
 
@@ -87,11 +78,11 @@ public class GossipServer {
       // TODO: Make delay and timing configurable.
       f1.channel()
           .eventLoop()
-          .scheduleAtFixedRate(new SyncInitiateTask(config, myStore, syncGroup), 5, 1, TimeUnit.SECONDS);
+          .scheduleAtFixedRate(new SyncInitiateTask(config, myStore), 5, 1, TimeUnit.SECONDS);
 
       // Configure HTTP channel used to receive data from clients.
       b = new ServerBootstrap();
-      b.group(httpGroup, clientWorkerGroup)
+      b.group(bossGroup, clientWorkerGroup)
           .channel(NioServerSocketChannel.class)
           .handler(new LoggingHandler("HTTP", LogLevel.INFO))
           .childHandler(
@@ -114,8 +105,6 @@ public class GossipServer {
       peerWorkerGroup.shutdownGracefully();
       bossGroup.shutdownGracefully();
       clientWorkerGroup.shutdownGracefully();
-      httpGroup.shutdownGracefully();
-      syncGroup.shutdownGracefully();
     }
   }
 }

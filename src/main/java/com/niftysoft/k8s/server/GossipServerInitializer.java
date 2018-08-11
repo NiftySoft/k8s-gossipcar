@@ -8,11 +8,8 @@ import io.netty.util.concurrent.EventExecutorGroup;
 public class GossipServerInitializer extends ChannelInitializer<Channel> {
 
     private VolatileStringStore vss;
-    private EventExecutorGroup syncGroup;
-
-    public GossipServerInitializer(VolatileStringStore vss, EventExecutorGroup syncGroup) {
+    public GossipServerInitializer(VolatileStringStore vss) {
         this.vss = vss;
-        this.syncGroup = syncGroup;
     }
 
     @Override

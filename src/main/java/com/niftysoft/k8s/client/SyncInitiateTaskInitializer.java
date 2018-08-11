@@ -8,11 +8,9 @@ import io.netty.util.concurrent.EventExecutorGroup;
 public class SyncInitiateTaskInitializer extends ChannelInitializer<Channel> {
 
     private VolatileStringStore vss;
-    private EventExecutorGroup syncGroup;
 
-    public SyncInitiateTaskInitializer(VolatileStringStore vss, EventExecutorGroup syncGroup) {
+    public SyncInitiateTaskInitializer(VolatileStringStore vss) {
         this.vss = vss;
-        this.syncGroup = syncGroup;
     }
 
     @Override

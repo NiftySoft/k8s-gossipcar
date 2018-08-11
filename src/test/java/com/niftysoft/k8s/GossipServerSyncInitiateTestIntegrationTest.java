@@ -21,36 +21,37 @@ public class GossipServerSyncInitiateTestIntegrationTest {
         Runnable run = constructGossipRunnable(server);
 
         Thread t = new Thread(run);
-        t.start();
+        try {
+            t.start();
 
-        do {
-            Thread.sleep(10);
-        } while (!server.isStarted());
+            do {
+                Thread.sleep(10);
+            } while (!server.isStarted());
 
-        // Send "key" -> "value" to server.
-        VolatileStringStore vss = new VolatileStringStore();
-        vss.put("key", "value");
+            // Send "key" -> "value" to server.
+            VolatileStringStore vss = new VolatileStringStore();
+            vss.put("key", "value");
 
-        EventExecutorGroup syncGroup = new DefaultEventExecutorGroup(1);
-        testConfig.serviceDnsName = "localhost";
-        SyncInitiateTask initiateSync = new SyncInitiateTask(testConfig, vss, syncGroup);
+            testConfig.serviceDnsName = "localhost";
+            SyncInitiateTask initiateSync = new SyncInitiateTask(testConfig, vss);
 
-        Thread t2 = new Thread(initiateSync);
-        t2.start();
-        t2.join();
+            Thread t2 = new Thread(initiateSync);
+            t2.start();
+            t2.join();
 
-        // Create a new sync task with an empty store.
-        initiateSync = new SyncInitiateTask(testConfig, new VolatileStringStore(), syncGroup);
+            // Create a new sync task with an empty store.
+            initiateSync = new SyncInitiateTask(testConfig, new VolatileStringStore());
 
-        t2 = new Thread(initiateSync);
-        t2.start();
-        t2.join();
+            t2 = new Thread(initiateSync);
+            t2.start();
+            t2.join();
 
-        // If the value was persisted to the server, it should be loaded again after a second sync.
-        assertThat(vss.get("key")).isEqualTo("value");
-
-        t.interrupt();
-        t.join();
+            // If the value was persisted to the server, it should be loaded again after a second sync.
+            assertThat(vss.get("key")).isEqualTo("value");
+        } finally {
+            t.interrupt();
+            t.join();
+        }
     }
 
     private Config constructTestConfig() {
