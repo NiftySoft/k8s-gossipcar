@@ -53,7 +53,7 @@ public class ConfigTest {
 
     assertThat(config.peerPort).isEqualTo(46747);
     assertThat(config.clientPort).isEqualTo(80);
-    assertThat(config.serviceDnsName).isEqualTo("gossipSidecar.default");
+    assertThat(config.serviceDnsName).isEqualTo("gossipSidecar.default.svc.cluster.local");
     assertThat(config.podIp).isEqualTo("127.0.0.1");
     assertThat(config.podName).isEqualTo("gossipSidecar-0");
   }
