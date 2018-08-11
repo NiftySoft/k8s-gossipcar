@@ -61,6 +61,7 @@ public class GossipServer {
 
     EventLoopGroup bossGroup = new NioEventLoopGroup();
     EventLoopGroup peerWorkerGroup = new NioEventLoopGroup(1);
+    EventLoopGroup syncInitiateGroup = new NioEventLoopGroup(1);
     EventLoopGroup clientWorkerGroup = new NioEventLoopGroup(1);
 
     try {
@@ -77,8 +78,8 @@ public class GossipServer {
       ChannelFuture f1 = b.bind(config.peerPort).sync();
 
       // TODO: Make delay and timing configurable.
-      f1.channel().eventLoop()
-          .scheduleAtFixedRate(new SyncInitiateTask(config, myStore, peerWorkerGroup), 5, 1, TimeUnit.SECONDS);
+      syncInitiateGroup
+          .scheduleAtFixedRate(new SyncInitiateTask(config, myStore, syncInitiateGroup), 5, 1, TimeUnit.SECONDS);
 
       // Configure HTTP channel used to receive data from clients.
       b = new ServerBootstrap();
@@ -105,6 +106,7 @@ public class GossipServer {
     } finally {
       peerWorkerGroup.shutdownGracefully();
       bossGroup.shutdownGracefully();
+      syncInitiateGroup.shutdownGracefully();
       clientWorkerGroup.shutdownGracefully();
     }
   }

@@ -53,7 +53,7 @@ public class GossipServerTest {
   }
 
   @Test
-  public void testGossipServerMainRespondsToRemoteClient() throws Exception {
+  public void testGossipServerMainRespondsToRemoteSync() throws Exception {
     Config testConfig = constructTestConfig();
     testConfig.serviceDnsName = "example.com"; // Ensure the server doesn't end up talking to itself.
     GossipServer server = new GossipServer(testConfig);

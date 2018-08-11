@@ -9,7 +9,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -54,10 +53,9 @@ public class SyncInitiateTask implements Runnable {
       if (host == null) return; // No friends. :-(
 
       Bootstrap b = new Bootstrap();
-      b.channel(NioSocketChannel.class);
-      b.group(group);
-      b.option(ChannelOption.SO_KEEPALIVE, true);
-      b.handler(new SyncInitiateTaskInitializer(myStore));
+      b.channel(NioSocketChannel.class)
+       .group(group)
+       .handler(new SyncInitiateTaskInitializer(myStore));
 
       ChannelFuture f = b.connect(host, port).sync();
 

@@ -41,8 +41,6 @@ public class GossipServerSyncInitiateTestIntegrationTest {
             Thread t2 = new Thread(initiateSync);
             t2.start();
             t2.join();
-
-            group = new NioEventLoopGroup(1);
             // Create a new sync task with an empty store.
             initiateSync = new SyncInitiateTask(testConfig, new VolatileStringStore(), group);
 

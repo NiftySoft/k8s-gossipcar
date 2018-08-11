@@ -17,7 +17,6 @@ public class ConfigTest {
     environmentVariables.clear("SERVICE_DNS_NAME");
     environmentVariables.clear("MY_POD_IP");
     environmentVariables.clear("MY_POD_NAME");
-    environmentVariables.clear("MY_POD_NAMESPACE");
   }
 
   @Test
@@ -27,7 +26,6 @@ public class ConfigTest {
     environmentVariables.set("SERVICE_DNS_NAME", "fat.tacos");
     environmentVariables.set("MY_POD_IP", "10.4.4.2");
     environmentVariables.set("MY_POD_NAME", "hargleblarg");
-    environmentVariables.set("MY_POD_NAMESPACE", "naamespaace");
 
     Config config = Config.fromEnvVars();
 
@@ -36,7 +34,6 @@ public class ConfigTest {
     assertThat(config.serviceDnsName).isEqualTo("fat.tacos");
     assertThat(config.podIp).isEqualTo("10.4.4.2");
     assertThat(config.podName).isEqualTo("hargleblarg");
-    assertThat(config.podNamespace).isEqualTo("naamespaace");
   }
 
   @Test
@@ -59,6 +56,5 @@ public class ConfigTest {
     assertThat(config.serviceDnsName).isEqualTo("gossipSidecar.default");
     assertThat(config.podIp).isEqualTo("127.0.0.1");
     assertThat(config.podName).isEqualTo("gossipSidecar-0");
-    assertThat(config.podNamespace).isEqualTo("default");
   }
 }
