@@ -26,7 +26,10 @@ public class SyncInitiateTask implements Runnable {
   private final VolatileStringStore myStore;
   private final InetAddress podIp;
 
-  public SyncInitiateTask(Config config, VolatileStringStore store) {
+  private final EventLoopGroup group;
+
+  public SyncInitiateTask(Config config, VolatileStringStore store, EventLoopGroup group) {
+    this.group = group;
     this.myStore = store;
     this.hostname = config.serviceDnsName;
     this.port = config.peerPort;
@@ -51,9 +54,8 @@ public class SyncInitiateTask implements Runnable {
       if (host == null) return; // No friends. :-(
 
       Bootstrap b = new Bootstrap();
-      EventLoopGroup workerGroup = new NioEventLoopGroup();
       b.channel(NioSocketChannel.class);
-      b.group(workerGroup);
+      b.group(group);
       b.option(ChannelOption.SO_KEEPALIVE, true);
       b.handler(new SyncInitiateTaskInitializer(myStore));
 

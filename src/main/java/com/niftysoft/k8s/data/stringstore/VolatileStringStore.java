@@ -10,6 +10,7 @@ import io.netty.handler.codec.ReplayingDecoder;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -31,7 +32,7 @@ public class VolatileStringStore implements Serializable {
   private Map<Long, VersionedString> internalMap;
 
   public VolatileStringStore() {
-    internalMap = new HashMap<>();
+    internalMap = new ConcurrentHashMap<>();
   }
 
   public static Function<String, Long> getHasher() {
@@ -43,7 +44,7 @@ public class VolatileStringStore implements Serializable {
    *
    * @param other
    */
-  public synchronized void mergeAllFresher(VolatileStringStore other) {
+  public void mergeAllFresher(VolatileStringStore other) {
     for (Map.Entry<Long, VersionedString> entry : other.internalMap.entrySet()) {
       long key = entry.getKey();
       this.internalMap.merge(
@@ -71,7 +72,7 @@ public class VolatileStringStore implements Serializable {
    * @param value String value to associate with key.
    * @return String the value previously stored.
    */
-  public synchronized String put(String key, String value) {
+  public String put(String key, String value) {
     return internalMap
         .merge(
             hasher.apply(key),

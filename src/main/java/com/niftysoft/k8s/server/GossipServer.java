@@ -7,6 +7,7 @@ import com.niftysoft.k8s.http.HttpEndpointHandler;
 import com.niftysoft.k8s.http.HttpRouteHandler;
 import com.niftysoft.k8s.http.MapHandler;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -58,7 +59,7 @@ public class GossipServer {
     // TODO: Allow the number of boss and worker threads to be configurable.
     VolatileStringStore myStore = new VolatileStringStore();
 
-    EventLoopGroup bossGroup = new NioEventLoopGroup(2);
+    EventLoopGroup bossGroup = new NioEventLoopGroup();
     EventLoopGroup peerWorkerGroup = new NioEventLoopGroup(1);
     EventLoopGroup clientWorkerGroup = new NioEventLoopGroup(1);
 
@@ -76,9 +77,8 @@ public class GossipServer {
       ChannelFuture f1 = b.bind(config.peerPort).sync();
 
       // TODO: Make delay and timing configurable.
-      f1.channel()
-          .eventLoop()
-          .scheduleAtFixedRate(new SyncInitiateTask(config, myStore), 5, 1, TimeUnit.SECONDS);
+      f1.channel().eventLoop()
+          .scheduleAtFixedRate(new SyncInitiateTask(config, myStore, peerWorkerGroup), 5, 1, TimeUnit.SECONDS);
 
       // Configure HTTP channel used to receive data from clients.
       b = new ServerBootstrap();
@@ -92,6 +92,7 @@ public class GossipServer {
                   ch.pipeline().addLast(buildHttpPipeline(myStore).toArray(new ChannelHandler[0]));
                 }
               })
+          .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
           .option(ChannelOption.SO_BACKLOG, 128)
           .childOption(ChannelOption.TCP_NODELAY, java.lang.Boolean.TRUE);
 

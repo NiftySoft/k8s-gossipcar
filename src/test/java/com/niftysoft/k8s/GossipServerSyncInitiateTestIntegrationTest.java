@@ -4,6 +4,8 @@ import com.niftysoft.k8s.client.SyncInitiateTask;
 import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import com.niftysoft.k8s.server.GossipServer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.junit.Test;
@@ -32,19 +34,23 @@ public class GossipServerSyncInitiateTestIntegrationTest {
             VolatileStringStore vss = new VolatileStringStore();
             vss.put("key", "value");
 
+            EventLoopGroup group = new NioEventLoopGroup(1);
             testConfig.serviceDnsName = "localhost";
-            SyncInitiateTask initiateSync = new SyncInitiateTask(testConfig, vss);
+            SyncInitiateTask initiateSync = new SyncInitiateTask(testConfig, vss, group);
 
             Thread t2 = new Thread(initiateSync);
             t2.start();
             t2.join();
 
+            group = new NioEventLoopGroup(1);
             // Create a new sync task with an empty store.
-            initiateSync = new SyncInitiateTask(testConfig, new VolatileStringStore());
+            initiateSync = new SyncInitiateTask(testConfig, new VolatileStringStore(), group);
 
             t2 = new Thread(initiateSync);
             t2.start();
             t2.join();
+
+            group.shutdownGracefully();
 
             // If the value was persisted to the server, it should be loaded again after a second sync.
             assertThat(vss.get("key")).isEqualTo("value");
