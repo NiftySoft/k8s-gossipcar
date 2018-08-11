@@ -5,6 +5,7 @@ import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
 import com.niftysoft.k8s.util.PeerUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -57,12 +58,10 @@ public class SyncInitiateTask implements Runnable {
        .group(group)
        .handler(new SyncInitiateTaskInitializer(myStore));
 
-      ChannelFuture f = b.connect(host, port).sync();
+      ChannelFuture f = b.connect(host, port);
 
-      f.channel().closeFuture().sync();
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-    } catch (InterruptedException e) {
+      f.addListener(ChannelFutureListener.CLOSE);
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
