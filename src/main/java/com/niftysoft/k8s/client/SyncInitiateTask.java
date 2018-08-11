@@ -56,9 +56,7 @@ public class SyncInitiateTask implements Runnable {
        .group(group)
        .handler(new SyncInitiateTaskInitializer(myStore));
 
-      ChannelFuture f = b.connect(host, port);
-
-      f.addListener(ChannelFutureListener.CLOSE);
+      ChannelFuture f = b.connect(host, port).sync().channel().closeFuture().sync();
     } catch (Exception e) {
       e.printStackTrace();
     }
