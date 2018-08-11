@@ -6,7 +6,7 @@
 
     <groupId>com.niftysoft.k8s</groupId>
     <artifactId>gossip-sidecar</artifactId>
-    <version>v0.1.0</version>
+    <version>v0.1.1</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
