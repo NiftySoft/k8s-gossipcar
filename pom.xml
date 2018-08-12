@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.niftysoft.k8s</groupId>
-    <artifactId>gossip-sidecar</artifactId>
+    <artifactId>gossipcar</artifactId>
     <version>v0.1.1</version>
 
     <properties>

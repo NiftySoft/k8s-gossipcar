@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gossip-sidecar
+  name: gossipcar
   labels:
-    app: gossip-sidecar
+    app: gossipcar
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: gossip-sidecar
+      app: gossipcar
   template:
     metadata:
       labels:
-        app: gossip-sidecar
+        app: gossipcar
     spec:
       containers:
-      - name: gossip-sidecar
-        image: registry.gitlab.com/kalexmills/k8s-gossip-sidecar:v0.1.0
+      - name: gossipcar
+        image: registry.gitlab.com/kalexmills/k8s-gossipcar:v0.1.0
         imagePullPolicy: Always
         ports:
         - name: client-http
@@ -29,7 +29,7 @@ spec:
         - name: CLIENT_PORT
           value: "80"
         - name: SERVICE_DNS_NAME
-          value: "gossip-sidecar.default.svc.cluster.local"
+          value: "gossipcar.default.svc.cluster.local"
         - name: MY_POD_NAME
           valueFrom:
             fieldRef:
@@ -49,13 +49,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: gossip-sidecar
+  name: gossipcar
   labels:
-    app: gossip-sidecar
+    app: gossipcar
 spec:
   clusterIP: None
   ports:
     - port: 46747
       name: gossip
   selector:
-    app: gossip-sidecar
+    app: gossipcar
