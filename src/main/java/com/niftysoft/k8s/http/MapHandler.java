@@ -1,11 +1,11 @@
 package com.niftysoft.k8s.http;
 
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.handler.codec.http.*;
 import io.netty.util.AsciiString;
-import io.netty.util.CharsetUtil;
 
 import java.util.List;
 
@@ -23,9 +23,9 @@ MapHandler extends HttpEndpointHandler {
           .concat("=")
           .concat("UTF-8");
 
-  private final VolatileStringStore vss;
+  private final VolatileByteStore vss;
 
-  public MapHandler(VolatileStringStore vss) {
+  public MapHandler(VolatileByteStore vss) {
     this.vss = vss;
   }
 
@@ -60,21 +60,17 @@ MapHandler extends HttpEndpointHandler {
     }
 
     // TODO: Don't use strings. Keep everything in ByteBuf for performance.
-    StringBuffer buffer = new StringBuffer();
+    ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
+
     for (String key : requestedKeys) {
-      buffer.append(key);
-      buffer.append('=');
-      buffer.append(vss.get(key));
-      buffer.append('\n');
+      ByteBufUtil.writeUtf8(buf,key+"=");
+      buf.writeBytes(vss.get(key));
+      ByteBufUtil.writeUtf8(buf, "\n");
     }
-    FullHttpResponse resp =
-        new DefaultFullHttpResponse(
-            HTTP_1_1,
-            HttpResponseStatus.OK,
-            ByteBufUtil.writeUtf8(ByteBufAllocator.DEFAULT, buffer));
+    FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, buf);
 
     resp.setStatus(HttpResponseStatus.OK);
-    resp.headers().set(HttpHeaderNames.CONTENT_TYPE, TEXT_PLAIN_UTF_8);
+    resp.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_OCTET_STREAM);
     resp.headers().set(HttpHeaderNames.CONTENT_LENGTH, resp.content().readableBytes());
     return resp;
   }
@@ -91,11 +87,11 @@ MapHandler extends HttpEndpointHandler {
     if (vss.containsKey(key)) resp.setStatus(HttpResponseStatus.NO_CONTENT);
     else resp.setStatus(HttpResponseStatus.CREATED);
 
-    String content = req.content().toString(CharsetUtil.UTF_8);
+    ByteBuf content = req.content();
+    byte[] bytes = new byte[content.readableBytes()];
+    content.readBytes(bytes);
+    vss.put(key, bytes);
 
-    vss.put(key, content);
-
-    resp.headers().set(HttpHeaderNames.CONTENT_TYPE, TEXT_PLAIN_UTF_8);
     resp.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
     return resp;
   }

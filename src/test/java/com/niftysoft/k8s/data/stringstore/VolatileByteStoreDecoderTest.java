@@ -9,11 +9,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class VolatileStringStoreDecoderTest {
+public class VolatileByteStoreDecoderTest {
 
   private static void writeEntry(ByteBuf buf, String key, String value, long version)
       throws Exception {
-    buf.writeLong(VolatileStringStore.getHasher().apply(key));
+    buf.writeLong(VolatileByteStore.getHasher().apply(key));
     buf.writeLong(version);
     byte[] bytes = value.getBytes("UTF-8");
     buf.writeInt(bytes.length);
@@ -23,7 +23,7 @@ public class VolatileStringStoreDecoderTest {
   @Test
   public void testDecodesEmptyMap() {
     EmbeddedChannel channel =
-        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+        new EmbeddedChannel(new VolatileByteStore.VolatileByteStoreDecoder());
 
     ByteBuf buf = Unpooled.buffer();
     buf.writeInt(0);
@@ -33,14 +33,14 @@ public class VolatileStringStoreDecoderTest {
 
     Object obj = channel.readInbound();
 
-    assertThat(obj).hasSameClassAs(new VolatileStringStore());
-    assertThat(((VolatileStringStore) obj).isEmpty()).isTrue();
+    assertThat(obj).hasSameClassAs(new VolatileByteStore());
+    assertThat(((VolatileByteStore) obj).isEmpty()).isTrue();
   }
 
   @Test
   public void testDecodesSingletonMap() throws Exception {
     EmbeddedChannel channel =
-        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+        new EmbeddedChannel(new VolatileByteStore.VolatileByteStoreDecoder());
 
     ByteBuf buf = Unpooled.buffer();
     buf.writeInt(1);
@@ -51,18 +51,18 @@ public class VolatileStringStoreDecoderTest {
 
     Object obj = channel.readInbound();
 
-    assertThat(obj).hasSameClassAs(new VolatileStringStore());
+    assertThat(obj).hasSameClassAs(new VolatileByteStore());
 
-    VolatileStringStore vss = (VolatileStringStore) obj;
+    VolatileByteStore vss = (VolatileByteStore) obj;
     assertThat(vss.size()).isEqualTo(1);
-    assertThat(vss.get("key")).isEqualTo("value");
+    assertThat(vss.get("key")).isEqualTo("value".getBytes());
     assertThat(vss.getVersion("key")).isEqualTo(Optional.of(12L));
   }
 
   @Test
   public void testDecodesMultiKeyMap() throws Exception {
     EmbeddedChannel channel =
-        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+        new EmbeddedChannel(new VolatileByteStore.VolatileByteStoreDecoder());
 
     ByteBuf buf = Unpooled.buffer();
     buf.writeInt(5);
@@ -77,16 +77,16 @@ public class VolatileStringStoreDecoderTest {
 
     Object obj = channel.readInbound();
 
-    assertThat(obj).hasSameClassAs(new VolatileStringStore());
+    assertThat(obj).hasSameClassAs(new VolatileByteStore());
 
-    VolatileStringStore vss = (VolatileStringStore) obj;
+    VolatileByteStore vss = (VolatileByteStore) obj;
 
     assertThat(vss.size()).isEqualTo(5);
-    assertThat(vss.get("alpha")).isEqualTo("beta");
-    assertThat(vss.get("gamma")).isEqualTo("slamma");
-    assertThat(vss.get("imma")).isEqualTo("mamma");
-    assertThat(vss.get("excelsior")).isEqualTo("marvel");
-    assertThat(vss.get("try it")).isEqualTo("not really");
+    assertThat(vss.get("alpha")).isEqualTo("beta".getBytes());
+    assertThat(vss.get("gamma")).isEqualTo("slamma".getBytes());
+    assertThat(vss.get("imma")).isEqualTo("mamma".getBytes());
+    assertThat(vss.get("excelsior")).isEqualTo("marvel".getBytes());
+    assertThat(vss.get("try it")).isEqualTo("not really".getBytes());
 
     assertThat(vss.getVersion("alpha")).isEqualTo(Optional.of(5L));
     assertThat(vss.getVersion("gamma")).isEqualTo(Optional.of(17L));
@@ -99,7 +99,7 @@ public class VolatileStringStoreDecoderTest {
   @Test
   public void testDecodesUnicodeStrings() throws Exception {
     EmbeddedChannel channel =
-        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+        new EmbeddedChannel(new VolatileByteStore.VolatileByteStoreDecoder());
 
     String unicodeKey = "\u0020\u1234 \u1045";
     String unicodeValue = "\u2014 \u0134 \u1203";
@@ -113,10 +113,10 @@ public class VolatileStringStoreDecoderTest {
 
     Object obj = channel.readInbound();
 
-    assertThat(obj).hasSameClassAs(new VolatileStringStore());
+    assertThat(obj).hasSameClassAs(new VolatileByteStore());
 
-    VolatileStringStore vss = (VolatileStringStore) obj;
+    VolatileByteStore vss = (VolatileByteStore) obj;
     assertThat(vss.size()).isEqualTo(1);
-    assertThat(vss.get(unicodeKey)).isEqualTo(unicodeValue);
+    assertThat(vss.get(unicodeKey)).isEqualTo(unicodeValue.getBytes());
   }
 }

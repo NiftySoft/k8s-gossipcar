@@ -1,7 +1,7 @@
 package com.niftysoft.k8s.client;
 
 import com.niftysoft.k8s.data.Config;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
 import com.niftysoft.k8s.util.PeerUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -19,12 +19,12 @@ public class SyncInitiateTask implements Runnable {
 
   private final int port;
   private final String hostname;
-  private final VolatileStringStore myStore;
+  private final VolatileByteStore myStore;
   private final InetAddress podIp;
 
   private final EventLoopGroup group;
 
-  public SyncInitiateTask(Config config, VolatileStringStore store, EventLoopGroup group) {
+  public SyncInitiateTask(Config config, VolatileByteStore store, EventLoopGroup group) {
     this.group = group;
     this.myStore = store;
     this.hostname = config.serviceDnsName;

@@ -4,7 +4,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.niftysoft.k8s.client.SyncInitiateTaskInitializer;
 import com.niftysoft.k8s.data.Config;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -16,6 +16,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
+
+import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -66,8 +68,8 @@ public class GossipServerTest {
         Thread.sleep(10);
       } while (!server.isStarted());
 
-      VolatileStringStore vss = new VolatileStringStore();
-      vss.put("key", "value");
+      VolatileByteStore vss = new VolatileByteStore();
+      vss.put("key", "value".getBytes());
 
       EventExecutorGroup clientSyncGroup = new DefaultEventExecutorGroup(1);
       EventLoopGroup group = new NioEventLoopGroup(1);
@@ -107,10 +109,12 @@ public class GossipServerTest {
 
       assertThat(resp.getBody()).isEmpty();
 
-      resp = Unirest.get("http://localhost:12345/map?k=123")
-              .asString();
+      HttpResponse<InputStream> response = Unirest.get("http://localhost:12345/map?k=123").asBinary();
 
-      assertThat(resp.getBody()).isEqualTo("123=Hello there.\n");
+      byte[] body = new byte[response.getBody().available()];
+      response.getBody().read(body);
+
+      assertThat(body).isEqualTo("123=Hello there.\n".getBytes());
 
     } finally {
       t.interrupt();

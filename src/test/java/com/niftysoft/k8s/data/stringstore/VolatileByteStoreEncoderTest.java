@@ -10,15 +10,15 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class VolatileStringStoreEncoderTest {
+public class VolatileByteStoreEncoderTest {
 
   private EmbeddedChannel channel;
-  private VolatileStringStore vss;
+  private VolatileByteStore vss;
 
   @Before
   public void before() {
-    channel = new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreEncoder());
-    vss = new VolatileStringStore();
+    channel = new EmbeddedChannel(new VolatileByteStore.VolatileByteStoreEncoder());
+    vss = new VolatileByteStore();
   }
 
   @Test
@@ -31,7 +31,7 @@ public class VolatileStringStoreEncoderTest {
 
   @Test
   public void testEncodesSingletonMap() {
-    vss.put("key", "value");
+    vss.put("key", "value".getBytes());
 
     ByteBuf buf = writeToOutboundAndReadOutboundByteBuf();
 
@@ -71,7 +71,7 @@ public class VolatileStringStoreEncoderTest {
   }
 
   private void writeEntry(String key, String value, long version) {
-    for (int i = 0; i < version + 1; ++i) vss.put(key, value);
+    for (int i = 0; i < version + 1; ++i) vss.put(key, value.getBytes());
   }
 
   private void assertSize(ByteBuf buf, int size) {
@@ -90,7 +90,7 @@ public class VolatileStringStoreEncoderTest {
   }
 
   private void assertEntry(ByteBuf buf, String key, String value, long version) {
-    assertThat(buf.readLong()).isEqualTo(VolatileStringStore.getHasher().apply(key));
+    assertThat(buf.readLong()).isEqualTo(VolatileByteStore.getHasher().apply(key));
     assertThat(buf.readLong()).isEqualTo(version);
 
     byte[] byteArr = new byte[buf.readInt()];
@@ -104,7 +104,7 @@ public class VolatileStringStoreEncoderTest {
     public long version;
 
     public Entry(String key, String value, long version) {
-      this(VolatileStringStore.getHasher().apply(key), value, version);
+      this(VolatileByteStore.getHasher().apply(key), value, version);
     }
 
     public Entry(long keyCode, String value, long version) {
