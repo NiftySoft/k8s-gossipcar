@@ -13,7 +13,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class
 
-/** @author K. Alex Mills */
+/** @author kalexmills */
 MapHandler extends HttpEndpointHandler {
 
   private static final AsciiString TEXT_PLAIN_UTF_8 =

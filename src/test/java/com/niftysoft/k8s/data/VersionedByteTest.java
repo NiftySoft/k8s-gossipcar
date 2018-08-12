@@ -4,34 +4,34 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class VersionedStringTest {
+public class VersionedByteTest {
 
   @Test
   public void testDefaultVersionIsZero() {
-    VersionedString str = new VersionedString();
+    VersionedByteArr str = new VersionedByteArr();
 
     assertThat(str.getVersion()).isEqualTo(0L);
   }
 
   @Test
   public void testDefaultValueIsNull() {
-    VersionedString str = new VersionedString();
+    VersionedByteArr str = new VersionedByteArr();
 
     assertThat(str.getValue()).isEqualTo(null);
   }
 
   @Test
   public void testGetValueReturnsLastSetValue() {
-    VersionedString str = new VersionedString();
+    VersionedByteArr str = new VersionedByteArr();
 
-    str.setValue("hello");
+    str.setValue("hello".getBytes());
 
-    assertThat(str.getValue()).isEqualTo("hello");
+    assertThat(str.getValue()).isEqualTo("hello".getBytes());
   }
 
   @Test
   public void testGetVersionReturnsLastSetValue() {
-    VersionedString str = new VersionedString();
+    VersionedByteArr str = new VersionedByteArr();
 
     str.setVersion(123L);
 

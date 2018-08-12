@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/** @author K. Alex Mills */
+/** @author kalexmills */
 public class GossipServer {
 
   private Config config;

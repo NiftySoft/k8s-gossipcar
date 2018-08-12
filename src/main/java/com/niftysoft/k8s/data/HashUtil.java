@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.data;
 
-/** @author K. Alex Mills */
+/** @author kalexmills */
 public class HashUtil {
 
   public static long hash(String string) {

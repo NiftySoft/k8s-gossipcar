@@ -1,5 +1,9 @@
 package com.niftysoft.k8s.data;
 
+/**
+ * Stores a byte array along with a version.
+ * @author kalexmills
+ */
 public class VersionedByteArr {
     private byte[] value;
     private long version;

@@ -5,7 +5,7 @@ import io.netty.channel.*;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
-/** @author K. Alex Mills */
+/** @author kalexmills */
 @ChannelHandler.Sharable
 public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileByteStore> {
   private static final InternalLogger log =

@@ -12,7 +12,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/** @author K. Alex Mills */
+/** @author kalexmills */
 public class SyncInitiateTask implements Runnable {
   private static final InternalLogger log =
       InternalLoggerFactory.getInstance(SyncInitiateTask.class);

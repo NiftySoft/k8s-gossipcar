@@ -19,7 +19,7 @@ import java.util.function.Function;
  * value is internally versioned. When put is called on a value, its version is incremented. When
  * mergeAllFresher is called, only values with versions larger than the current version are updated.
  *
- * @author K. Alex Mills
+ * @author kalexmills
  */
 public class VolatileByteStore {
   /** This function is used to ensure that the same hash function is used in all places. */

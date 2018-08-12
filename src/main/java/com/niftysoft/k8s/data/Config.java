@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.data;
 
-/** @author K. Alex Mills */
+/** @author kalexmills */
 public final class Config {
   public static final String PEER_PORT = "PEER_PORT";
   public static final String CLIENT_PORT = "CLIENT_PORT";

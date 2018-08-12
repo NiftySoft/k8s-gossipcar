@@ -7,7 +7,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
-/** @author K. Alex Mills */
+/** @author kalexmills */
 @ChannelHandler.Sharable
 public class SyncInitiateHandler extends SimpleChannelInboundHandler {
   private static final InternalLogger log =

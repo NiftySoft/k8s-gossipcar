@@ -10,7 +10,7 @@ import java.util.Map;
  * Typically only one instance of an endpoint handler is constructed and statically glued together
  * at run-time, so they are intended to be stateless.
  *
- * @author K. Alex Mills
+ * @author kalexmills
  */
 public abstract class HttpEndpointHandler {
 
