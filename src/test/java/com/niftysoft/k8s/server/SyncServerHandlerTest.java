@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.server;
 
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.After;
@@ -27,9 +27,9 @@ public class SyncServerHandlerTest {
   private final PrintStream originalOut = System.out;
   private final PrintStream originalErr = System.err;
 
-  private VolatileStringStore localStore = mock(VolatileStringStore.class);
+  private VolatileByteStore localStore = mock(VolatileByteStore.class);
 
-  @Captor private ArgumentCaptor<VolatileStringStore> storeCaptor;
+  @Captor private ArgumentCaptor<VolatileByteStore> storeCaptor;
 
   @Before
   public void setUpStreams() {
@@ -45,8 +45,8 @@ public class SyncServerHandlerTest {
 
   @Test
   public void testSyncServerMergesLocalStoreWithRemote() {
-    final VolatileStringStore remoteStore = new VolatileStringStore();
-    remoteStore.put("key", "come from away");
+    final VolatileByteStore remoteStore = new VolatileByteStore();
+    remoteStore.put("key", "come from away".getBytes());
 
     EmbeddedChannel channel = constructTestStack(localStore);
 
@@ -54,18 +54,18 @@ public class SyncServerHandlerTest {
 
     verify(localStore).mergeAllFresher(storeCaptor.capture());
 
-    VolatileStringStore storeMerged = storeCaptor.getValue();
+    VolatileByteStore storeMerged = storeCaptor.getValue();
 
-    assertThat(storeMerged.get("key")).isEqualTo("come from away");
+    assertThat(storeMerged.get("key")).isEqualTo("come from away".getBytes());
     assertThat(storeMerged.getVersion("key")).isEqualTo(Optional.of(0L));
   }
 
   @Test
   public void testSyncServerRespondsWithLocalStore() {
-    final VolatileStringStore localStore = new VolatileStringStore();
-    final VolatileStringStore remoteStore = new VolatileStringStore();
+    final VolatileByteStore localStore = new VolatileByteStore();
+    final VolatileByteStore remoteStore = new VolatileByteStore();
 
-    localStore.put("key", "look what I have");
+    localStore.put("key", "look what I have".getBytes());
 
     EmbeddedChannel channel = constructTestStack(localStore);
 
@@ -74,19 +74,19 @@ public class SyncServerHandlerTest {
     assertThat(channel.outboundMessages().size()).isEqualTo(1);
 
     EmbeddedChannel decoderChan =
-        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+        new EmbeddedChannel(new VolatileByteStore.VolatileByteStoreDecoder());
 
     decoderChan.writeInbound((ByteBuf) channel.readOutbound());
     Object obj = decoderChan.readInbound();
 
     assertThat(obj).hasSameClassAs(remoteStore);
-    assertThat(((VolatileStringStore) obj).get("key")).isEqualTo("look what I have");
+    assertThat(((VolatileByteStore) obj).get("key")).isEqualTo("look what I have".getBytes());
   }
 
-  private EmbeddedChannel constructTestStack(VolatileStringStore store) {
+  private EmbeddedChannel constructTestStack(VolatileByteStore store) {
     return new EmbeddedChannel(
-        new VolatileStringStore.VolatileStringStoreDecoder(),
-        new VolatileStringStore.VolatileStringStoreEncoder(),
+        new VolatileByteStore.VolatileByteStoreDecoder(),
+        new VolatileByteStore.VolatileByteStoreEncoder(),
         new SyncServerHandler(store));
   }
 }

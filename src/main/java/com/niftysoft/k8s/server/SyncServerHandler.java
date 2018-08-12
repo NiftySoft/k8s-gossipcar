@@ -1,19 +1,19 @@
 package com.niftysoft.k8s.server;
 
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
 import io.netty.channel.*;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
-/** @author K. Alex Mills */
+/** @author kalexmills */
 @ChannelHandler.Sharable
-public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileStringStore> {
+public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileByteStore> {
   private static final InternalLogger log =
       InternalLoggerFactory.getInstance(SyncServerHandler.class);
 
-  private final VolatileStringStore myStore;
+  private final VolatileByteStore myStore;
 
-  public SyncServerHandler(VolatileStringStore store) {
+  public SyncServerHandler(VolatileByteStore store) {
     this.myStore = store;
   }
 
@@ -23,7 +23,7 @@ public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileStrin
   }
 
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, final VolatileStringStore otherStore) {
+  public void channelRead0(ChannelHandlerContext ctx, final VolatileByteStore otherStore) {
     log.debug("Store received.");
 
     log.debug("Writing store to remote peer.");

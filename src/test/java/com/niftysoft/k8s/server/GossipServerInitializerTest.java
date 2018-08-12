@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.server;
 
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Test;
 
@@ -11,7 +11,7 @@ public class GossipServerInitializerTest {
 
     @Test
     public void testGossipServerInitializerAddsSyncServerHandlerToPipeline() {
-        VolatileStringStore vss = mock(VolatileStringStore.class);
+        VolatileByteStore vss = mock(VolatileByteStore.class);
 
         EmbeddedChannel chan = new EmbeddedChannel(new GossipServerInitializer(vss));
 

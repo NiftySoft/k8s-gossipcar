@@ -1,7 +1,7 @@
 package com.niftysoft.k8s;
 
 import com.niftysoft.k8s.client.SyncInitiateTaskInitializer;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
 import com.niftysoft.k8s.server.GossipServerInitializer;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Before;
@@ -11,15 +11,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SyncClientSyncServerIntegrationTest {
 
-    private VolatileStringStore clientStore;
-    private VolatileStringStore serverStore;
+    private VolatileByteStore clientStore;
+    private VolatileByteStore serverStore;
     private EmbeddedChannel clientChan;
     private EmbeddedChannel serverChan;
 
     @Before
     public void before() {
-        clientStore = new VolatileStringStore();
-        serverStore = new VolatileStringStore();
+        clientStore = new VolatileByteStore();
+        serverStore = new VolatileByteStore();
     }
 
     private void connect() {
@@ -40,7 +40,7 @@ public class SyncClientSyncServerIntegrationTest {
 
     @Test
     public void testClientSyncSendsToServer() throws Exception {
-        clientStore.put("key", "value");
+        clientStore.put("key", "value".getBytes());
 
         connect();
 
@@ -48,47 +48,47 @@ public class SyncClientSyncServerIntegrationTest {
 
         assertChannelsEmpty();
 
-        assertThat(serverStore.get("key")).isEqualTo("value");
+        assertThat(serverStore.get("key")).isEqualTo("value".getBytes());
     }
 
     @Test
     public void testServerSyncSendsToClient() throws Exception {
-        serverStore.put("key", "value");
+        serverStore.put("key", "value".getBytes());
         connect();
         pumpMessagesRoundTrip();
         assertChannelsEmpty();
 
-        assertThat(clientStore.get("key")).isEqualTo("value");
+        assertThat(clientStore.get("key")).isEqualTo("value".getBytes());
     }
 
     @Test
     public void testClientValuesOverwritesServerValue() throws Exception {
-        clientStore.put("key", "value0");
-        clientStore.put("key", "value1");
-        clientStore.put("key", "value2");
+        clientStore.put("key", "value0".getBytes());
+        clientStore.put("key", "value1".getBytes());
+        clientStore.put("key", "value2".getBytes());
 
-        serverStore.put("key", "server-value");
+        serverStore.put("key", "server-value".getBytes());
 
         connect();
         pumpMessagesRoundTrip();
         assertChannelsEmpty();
 
-        assertThat(serverStore.get("key")).isEqualTo("value2");
+        assertThat(serverStore.get("key")).isEqualTo("value2".getBytes());
     }
 
     @Test
     public void testServerValuesOverwritesClientValue() throws Exception {
-        serverStore.put("key", "value0");
-        serverStore.put("key", "value1");
-        serverStore.put("key", "value2");
+        serverStore.put("key", "value0".getBytes());
+        serverStore.put("key", "value1".getBytes());
+        serverStore.put("key", "value2".getBytes());
 
-        clientStore.put("key", "server-value");
+        clientStore.put("key", "server-value".getBytes());
 
         connect();
         pumpMessagesRoundTrip();
         assertChannelsEmpty();
 
-        assertThat(serverStore.get("key")).isEqualTo("value2");
+        assertThat(serverStore.get("key")).isEqualTo("value2".getBytes());
     }
 
     private void pumpMessagesRoundTrip() throws Exception {

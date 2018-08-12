@@ -1,14 +1,12 @@
 package com.niftysoft.k8s.data.stringstore;
 
 import com.niftysoft.k8s.data.HashUtil;
-import com.niftysoft.k8s.data.VersionedString;
+import com.niftysoft.k8s.data.VersionedByteArr;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,20 +19,18 @@ import java.util.function.Function;
  * value is internally versioned. When put is called on a value, its version is incremented. When
  * mergeAllFresher is called, only values with versions larger than the current version are updated.
  *
- * @author K. Alex Mills
+ * @author kalexmills
  */
-public class VolatileStringStore implements Serializable {
-
-  private static final long serialVersionUID = -5261239982290750103L;
+public class VolatileByteStore {
   /** This function is used to ensure that the same hash function is used in all places. */
   private static final Function<String, Long> hasher = HashUtil::hash;
   /**
    * Use a long keys internally to avoid sending unnecessary strings over the wire (KeySet). Package
    * private to enable
    */
-  private Map<Long, VersionedString> internalMap;
+  private Map<Long, VersionedByteArr> internalMap;
 
-  public VolatileStringStore() {
+  public VolatileByteStore() {
     internalMap = new ConcurrentHashMap<>();
   }
 
@@ -47,13 +43,13 @@ public class VolatileStringStore implements Serializable {
    *
    * @param other
    */
-  public void mergeAllFresher(VolatileStringStore other) {
-    for (Map.Entry<Long, VersionedString> entry : other.internalMap.entrySet()) {
+  public void mergeAllFresher(VolatileByteStore other) {
+    for (Map.Entry<Long, VersionedByteArr> entry : other.internalMap.entrySet()) {
       long key = entry.getKey();
       this.internalMap.merge(
           key,
           entry.getValue(),
-          (VersionedString oldValue, VersionedString value) ->
+          (VersionedByteArr oldValue, VersionedByteArr value) ->
               (value.getVersion() > oldValue.getVersion()) ? value : oldValue);
     }
   }
@@ -62,9 +58,9 @@ public class VolatileStringStore implements Serializable {
    * @param key String key
    * @return String value associated with the given key.
    */
-  public String get(String key) {
-    VersionedString str = internalMap.get(hasher.apply(key));
-    return (str == null) ? null : str.getValue();
+  public byte[] get(String key) {
+    VersionedByteArr vArr = internalMap.get(hasher.apply(key));
+    return (vArr == null) ? null : vArr.getValue();
   }
 
   /**
@@ -72,14 +68,14 @@ public class VolatileStringStore implements Serializable {
    * peer, use mergeAllFresher().
    *
    * @param key String key to use to retrieve value in future.
-   * @param value String value to associate with key.
-   * @return String the value previously stored.
+   * @param value byte[] value to associate with key.
+   * @return byte[] the value previously stored.
    */
-  public String put(String key, String value) {
+  public byte[] put(String key, byte[] value) {
     return internalMap
         .merge(
             hasher.apply(key),
-            new VersionedString(value),
+            new VersionedByteArr(value),
             (oldValue, newValue) -> {
               newValue.setVersion(oldValue.getVersion() + 1);
               return newValue;
@@ -116,44 +112,43 @@ public class VolatileStringStore implements Serializable {
     return Optional.of(internalMap.get(hash).getVersion());
   }
 
-  public static class VolatileStringStoreDecoder extends ReplayingDecoder<VolatileStringStore> {
+  public static class VolatileByteStoreDecoder extends ReplayingDecoder<VolatileByteStore> {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
         throws Exception {
-      VolatileStringStore result = new VolatileStringStore();
+      VolatileByteStore result = new VolatileByteStore();
       int numEntries = in.readInt();
       for (int i = 0; i < numEntries; ++i) {
         long key = in.readLong();
-        long verstrVersion = in.readLong();
+        long vArrVersion = in.readLong();
 
-        byte[] stringBuffer = new byte[in.readInt()];
-        in.readBytes(stringBuffer);
-        String verstrValue = new String(stringBuffer, "UTF-8");
+        byte[] bytes = new byte[in.readInt()];
+        in.readBytes(bytes);
 
-        VersionedString verstr = new VersionedString();
-        verstr.setVersion(verstrVersion);
-        verstr.setValue(verstrValue);
+        VersionedByteArr vArr = new VersionedByteArr();
+        vArr.setVersion(vArrVersion);
+        vArr.setValue(bytes);
 
-        result.internalMap.put(key, verstr);
+        result.internalMap.put(key, vArr);
       }
       out.add(result);
     }
   }
 
-  public static class VolatileStringStoreEncoder extends MessageToByteEncoder<VolatileStringStore> {
+  public static class VolatileByteStoreEncoder extends MessageToByteEncoder<VolatileByteStore> {
     @Override
-    protected void encode(ChannelHandlerContext ctx, VolatileStringStore in, ByteBuf out) {
-      Set<Map.Entry<Long, VersionedString>> entrySet = in.internalMap.entrySet();
+    protected void encode(ChannelHandlerContext ctx, VolatileByteStore in, ByteBuf out) {
+      Set<Map.Entry<Long, VersionedByteArr>> entrySet = in.internalMap.entrySet();
       out.writeInt(entrySet.size());
-      for (Map.Entry<Long, VersionedString> entry : entrySet) {
+      for (Map.Entry<Long, VersionedByteArr> entry : entrySet) {
         out.writeLong(entry.getKey());
 
-        VersionedString verstr = entry.getValue();
-        out.writeLong(verstr.getVersion());
+        VersionedByteArr vArr = entry.getValue();
+        out.writeLong(vArr.getVersion());
 
-        int nBytes = ByteBufUtil.utf8Bytes(verstr.getValue());
-        out.writeInt(nBytes);
-        ByteBufUtil.reserveAndWriteUtf8(out, verstr.getValue(), nBytes);
+        byte[] bytes = vArr.getValue();
+        out.writeInt(bytes.length);
+        out.writeBytes(bytes);
       }
     }
   }

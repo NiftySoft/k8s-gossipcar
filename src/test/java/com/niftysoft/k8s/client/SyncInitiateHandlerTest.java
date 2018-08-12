@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.client;
 
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.After;
@@ -27,9 +27,9 @@ public class SyncInitiateHandlerTest {
   private final PrintStream originalOut = System.out;
   private final PrintStream originalErr = System.err;
 
-  private VolatileStringStore localStore = mock(VolatileStringStore.class);
+  private VolatileByteStore localStore = mock(VolatileByteStore.class);
 
-  @Captor private ArgumentCaptor<VolatileStringStore> storeCaptor;
+  @Captor private ArgumentCaptor<VolatileByteStore> storeCaptor;
 
   @Before
   public void setUpStreams() {
@@ -45,8 +45,8 @@ public class SyncInitiateHandlerTest {
 
   @Test
   public void testSyncTaskMergesLocalStoreWithRemote() {
-    final VolatileStringStore remoteStore = new VolatileStringStore();
-    remoteStore.put("key", "value");
+    final VolatileByteStore remoteStore = new VolatileByteStore();
+    remoteStore.put("key", "value".getBytes());
 
     EmbeddedChannel channel = constructTestStack(localStore);
 
@@ -54,15 +54,15 @@ public class SyncInitiateHandlerTest {
 
     verify(localStore).mergeAllFresher(storeCaptor.capture());
 
-    VolatileStringStore storeMerged = storeCaptor.getValue();
+    VolatileByteStore storeMerged = storeCaptor.getValue();
 
-    assertThat(storeMerged.get("key")).isEqualTo("value");
+    assertThat(storeMerged.get("key")).isEqualTo("value".getBytes());
     assertThat(storeMerged.getVersion("key")).isEqualTo(Optional.of(0L));
   }
 
   @Test
   public void testSyncClientInitiatesSyncProtocol() {
-    final VolatileStringStore store = new VolatileStringStore();
+    final VolatileByteStore store = new VolatileByteStore();
 
     EmbeddedChannel channel = constructTestStack(store);
 
@@ -73,16 +73,16 @@ public class SyncInitiateHandlerTest {
 
   @Test
   public void testSyncClientWritesLocalStringStore() {
-    final VolatileStringStore testStore = new VolatileStringStore();
+    final VolatileByteStore testStore = new VolatileByteStore();
 
-    testStore.put("test", "string");
+    testStore.put("test", "string".getBytes());
 
     EmbeddedChannel channel = constructTestStack(testStore);
 
     assertThat(channel.outboundMessages().size()).isEqualTo(1);
 
     EmbeddedChannel decoderChan =
-        new EmbeddedChannel(new VolatileStringStore.VolatileStringStoreDecoder());
+        new EmbeddedChannel(new VolatileByteStore.VolatileByteStoreDecoder());
 
     decoderChan.writeInbound((ByteBuf) channel.readOutbound());
 
@@ -90,12 +90,12 @@ public class SyncInitiateHandlerTest {
 
     assertThat(obj).hasSameClassAs(testStore);
 
-    assertThat(((VolatileStringStore) obj).get("test")).isEqualTo("string");
+    assertThat(((VolatileByteStore) obj).get("test")).isEqualTo("string".getBytes());
   }
 
   @Test
   public void testSyncTaskPrintsExceptionAndClosesStream() {
-    final VolatileStringStore testStore = new VolatileStringStore();
+    final VolatileByteStore testStore = new VolatileByteStore();
 
     EmbeddedChannel channel = constructTestStack(testStore);
 
@@ -105,10 +105,10 @@ public class SyncInitiateHandlerTest {
     assertThat(errContent.toString()).isNotBlank();
   }
 
-  private EmbeddedChannel constructTestStack(VolatileStringStore store) {
+  private EmbeddedChannel constructTestStack(VolatileByteStore store) {
     return new EmbeddedChannel(
-        new VolatileStringStore.VolatileStringStoreDecoder(),
-        new VolatileStringStore.VolatileStringStoreEncoder(),
+        new VolatileByteStore.VolatileByteStoreDecoder(),
+        new VolatileByteStore.VolatileByteStoreEncoder(),
         new SyncInitiateHandler(store));
   }
 }

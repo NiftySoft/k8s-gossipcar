@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.http;
 
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -15,16 +15,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MapHandlerTest {
 
-  VolatileStringStore vss;
+  VolatileByteStore vss;
 
   @Before
   public void before() {
-    vss = new VolatileStringStore();
+    vss = new VolatileByteStore();
   }
 
   @Test
   public void testMapHandlerAcceptsGetRequests() throws Exception {
-    vss.put("key", "value");
+    vss.put("key", "value".getBytes());
 
     EmbeddedChannel chan = constructTestStack(vss);
 
@@ -43,7 +43,7 @@ public class MapHandlerTest {
     assertThat(resp.status().code()).isEqualTo(200);
     assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
     assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE))
-        .isEqualTo("text/plain; charset=UTF-8");
+        .isEqualTo("application/octet-stream");
 
     ByteBuf buf = resp.content();
     String content = new String(ByteBufUtil.getBytes(buf), Charset.forName("UTF-8"));
@@ -53,9 +53,9 @@ public class MapHandlerTest {
 
   @Test
   public void testMapHandlerAcceptsMultipleKeysInGetRequests() throws Exception {
-    vss.put("key1", "value1");
-    vss.put("key2", "value2");
-    vss.put("key3", "value3");
+    vss.put("key1", "value1".getBytes());
+    vss.put("key2", "value2".getBytes());
+    vss.put("key3", "value3".getBytes());
 
     EmbeddedChannel chan = constructTestStack(vss);
 
@@ -74,7 +74,7 @@ public class MapHandlerTest {
     assertThat(resp.status().code()).isEqualTo(200);
     assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
     assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE))
-        .isEqualTo("text/plain; charset=UTF-8");
+        .isEqualTo("application/octet-stream");
 
     ByteBuf buf = resp.content();
     String content = new String(ByteBufUtil.getBytes(buf), Charset.forName("UTF-8"));
@@ -84,8 +84,8 @@ public class MapHandlerTest {
 
   @Test
   public void testMapHandlerAcceptsGetAndIgnoresMissingKeys() throws Exception {
-    vss.put("key1", "value1");
-    vss.put("key3", "value3");
+    vss.put("key1", "value1".getBytes());
+    vss.put("key3", "value3".getBytes());
 
     EmbeddedChannel chan = constructTestStack(vss);
 
@@ -104,7 +104,7 @@ public class MapHandlerTest {
     assertThat(resp.status().code()).isEqualTo(200);
     assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
     assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE))
-        .isEqualTo("text/plain; charset=UTF-8");
+        .isEqualTo("application/octet-stream");
 
     ByteBuf buf = resp.content();
     String content = new String(ByteBufUtil.getBytes(buf), Charset.forName("UTF-8"));
@@ -130,11 +130,8 @@ public class MapHandlerTest {
     FullHttpResponse resp = pollHttpResponse(chan);
 
     assertThat(resp.status().code()).isEqualTo(201);
-    assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
-    assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE))
-        .isEqualTo("text/plain; charset=UTF-8");
 
-    assertThat(vss.get("key")).isEqualTo("value");
+    assertThat(vss.get("key")).isEqualTo("value".getBytes());
   }
 
   @Test
@@ -178,7 +175,7 @@ public class MapHandlerTest {
     return (FullHttpResponse) chan.outboundMessages().poll();
   }
 
-  public EmbeddedChannel constructTestStack(VolatileStringStore vss) {
+  public EmbeddedChannel constructTestStack(VolatileByteStore vss) {
     MapHandler handler = new MapHandler(vss);
     Router<HttpEndpointHandler> router = new Router<>();
     router.addRoute(HttpMethod.GET, "/a", handler);

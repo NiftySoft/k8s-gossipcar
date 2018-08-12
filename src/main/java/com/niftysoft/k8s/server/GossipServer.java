@@ -2,7 +2,7 @@ package com.niftysoft.k8s.server;
 
 import com.niftysoft.k8s.client.SyncInitiateTask;
 import com.niftysoft.k8s.data.Config;
-import com.niftysoft.k8s.data.stringstore.VolatileStringStore;
+import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
 import com.niftysoft.k8s.http.HttpEndpointHandler;
 import com.niftysoft.k8s.http.HttpRouteHandler;
 import com.niftysoft.k8s.http.MapHandler;
@@ -19,12 +19,15 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.router.Router;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Log4JLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/** @author K. Alex Mills */
+/** @author kalexmills */
 public class GossipServer {
 
   private Config config;
@@ -35,7 +38,7 @@ public class GossipServer {
     this.config = config;
   }
 
-  public static List<ChannelHandler> buildHttpPipeline(VolatileStringStore store) {
+  public static List<ChannelHandler> buildHttpPipeline(VolatileByteStore store) {
     MapHandler mapHandler = new MapHandler(store);
     return Arrays.asList(
         new HttpServerCodec(),
@@ -50,12 +53,13 @@ public class GossipServer {
   public boolean isStarted() { return isStarted; }
 
   public static void main(String[] args) throws Exception {
+    InternalLoggerFactory.setDefaultFactory(Log4JLoggerFactory.INSTANCE);
     new GossipServer(Config.fromEnvVars()).run();
   }
 
   public void run() throws Exception {
     // TODO: Allow the number of boss and worker threads to be configurable.
-    VolatileStringStore myStore = new VolatileStringStore();
+    VolatileByteStore myStore = new VolatileByteStore();
 
     EventLoopGroup bossGroup = new NioEventLoopGroup();
     EventLoopGroup peerWorkerGroup = new NioEventLoopGroup(1);
