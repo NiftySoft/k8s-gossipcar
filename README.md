@@ -1,10 +1,13 @@
 # Kubernetes Gossip Sidecar
 
+![GitHub tag](https://img.shields.io/github/tag/niftysoft/k8s-gossipcar.svg)
+![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ![Travis CI Build](https://travis-ci.org/NiftySoft/k8s-gossip-sidecar.svg?branch=master)
 ![Codacy Badge](https://api.codacy.com/project/badge/Grade/090f054b569a4074864f3a9e260850b8)
 ![Codacy Badge](https://api.codacy.com/project/badge/Coverage/090f054b569a4074864f3a9e260850b8)
-![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg)
+
+
 
 
 A lightweight Kubernetes sidecar for performing slow-sync on an in-memory key-value
