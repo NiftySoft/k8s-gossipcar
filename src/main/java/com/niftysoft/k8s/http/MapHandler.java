@@ -34,7 +34,7 @@ public class MapHandler extends HttpEndpointHandler {
   }
 
   public FullHttpResponse handleGet(FullHttpRequest req) {
-    if (!queryParams.containsKey("k")) {
+    if (!queryParams.containsKey("k") || !queryParams.containsKey("k")) {
       return DefaultHttpHandler.respond422(req);
     }
 
