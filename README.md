@@ -1,4 +1,5 @@
-# Kubernetes Gossip Sidecar
+# Gossipcar
+### Kubernetes-native Gossip Sidecar
 
 ![GitHub tag](https://img.shields.io/github/tag/niftysoft/k8s-gossipcar.svg)
 ![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -13,7 +14,7 @@
 A lightweight Kubernetes sidecar for performing slow-sync on an in-memory key-value
 store.
 
-### But Why?
+## But Why?
 
 Not all cluster data requires strong write consistency and high-availability. Sometimes you
 just want to sync information with peers without taxing cluster resources. This sidecar is
@@ -24,7 +25,7 @@ built for those use-cases.
 1. Uses gossip-protocols to perform two-way sync with a random peer.
 1. Built on Netty, a lightweight non-blocking networking library for Java.
 
-### How does it work?
+## How does it work?
 
 The sidecar is installed as a headless Kubernetes service. During sync, each node looks up
 its list of peers from the service and initiates two-way sync with a random peer. Peers 
@@ -34,7 +35,7 @@ While the gossip protocol used is [guaranteed](http://disi.unitn.it/~montreso/ds
 to converge within a logarithmic number of rounds, if you require strict convergence SLAs
 a Gossip Sidecar may not be the right tool for your use-case.
 
-### How can I use it?
+## How can I use it?
 
 Docker images are availble in `.tar` format in [releases](https://github.com/NiftySoft/k8s-gossipcar/releases). 
 To deploy on Kubernetes, a starting config is available in [k8s-deploy.yaml](https://github.com/NiftySoft/k8s-gossipcar/blob/master/k8s-deploy.yaml). 
@@ -44,54 +45,59 @@ the `containerPort` to something other than port 80.
 Once deployed, another process running on the same pod can access the container by sending HTTP requests
 to localhost:80. The following endpoints are available to interact with the key-value store.
 
-#### Associate Key with Value
+### To Write to Gossipcar
 
-`PUT http://localhost:80/map?k=<key>`
+PUT `http://localhost:80/map?k=<key>`
 
-Response Headers:
+**REQUEST BODY:**
+```
+[Octet stream of data to be associated with "key"]
+```
+
+**RESPONSE HEADERS:**
 ```
 Content-Length: 0
 ```
 
-Response Body:
+**RESPONSE BODY:**
 ```
 EMPTY
 ```
 
-Response codes:
- * `201 CREATED`    - if key did not previously exist in the repo
- * `204 NO CONTENT` - if key existed previously, and was succesfully overwritten
+**RESPONSE CODES:**
+ * **201 CREATED**    - if key did not previously exist in the repo
+ * **204 NO CONTENT** - if key existed previously, and was succesfully overwritten
    
- * `422 UNPROCESSABLE ENTITY` - if query parameter k was not present.
+ * **422 UNPROCESSABLE ENTITY** - if query parameter k was not present.
    
- * `500 INTERNAL ERROR` - something awful has occurred.
+ * **500 INTERNAL ERROR** - something awful has occurred.
 
 
-#### Retrieve Value(s) associated with Key(s)
+### To Read from Gossipcar
 
-`GET http://localhost:80/map?k=<key1>&k=<key2>...`
+GET `http://localhost:80/map?k=<key1>&k=<key2>...`
 
-Response Headers:
+**RESPONSE HEADERS:**
 ```
 Content-Type: application/octect-stream
 Content-Length: [number of bytes in body]
 ```
 
-Response Body:
+**RESPONSE CONTENT:**
 ```
 <key1>=<value1>\n
 <key2>=<value2>\n
 ...
 ```
 
-Response codes:
- * `200 OK` - if at least one key was present.
+**RESPONSE CODES:**
+ * **200 OK** - if at least one key was present.
    
- * `404 NOT FOUND`            - If none of the requested keys were present.
- * `422 UNPROCESSABLE ENTITY` - If no query parameter named "k" was present.
+ * **404 NOT FOUND**            - If none of the requested keys were present.
+ * **422 UNPROCESSABLE ENTITY** - If no query parameter named "k" was present.
 
-Notes:
- * Each key-value pair appears on a separate line, ended by a single `'\n'` character.
+**NOTES:**
+ * Each key-value pair appears on a separate line, ended by a single '\n' character.
  * Requested keys which are not present are not included in the response body.
- * `<key#>=` will be formatted as a UTF-8 string.
- * `<value#>` will be the octet stream associated with <key#>.
+ * "<key#>=" will be formatted as a UTF-8 string.
+ * "<value#>" will be the octet stream associated with <key#>.
