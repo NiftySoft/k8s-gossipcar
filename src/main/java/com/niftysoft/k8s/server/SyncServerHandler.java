@@ -1,5 +1,6 @@
 package com.niftysoft.k8s.server;
 
+import com.niftysoft.k8s.data.LifetimeStats;
 import com.niftysoft.k8s.data.VolatileByteStore;
 import io.netty.channel.*;
 import io.netty.util.internal.logging.InternalLogger;
@@ -27,7 +28,10 @@ public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileByteS
     log.debug("Store received.");
 
     log.debug("Writing store to remote peer.");
-    ctx.executor().execute(() -> myStore.mergeAllFresher(otherStore));
+    ctx.executor().execute(() -> {
+      myStore.mergeAllFresher(otherStore);
+      LifetimeStats.SUCCESSFUL_INCOMING_SYNCS.incrementAndGet();
+    });
 
     ChannelFuture future = ctx.write(myStore);
     future.addListener(ChannelFutureListener.CLOSE);

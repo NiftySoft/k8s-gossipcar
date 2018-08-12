@@ -1,13 +1,11 @@
 package com.niftysoft.k8s.http;
 
+import com.niftysoft.k8s.data.LifetimeStats;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.router.RouteResult;
 import io.netty.handler.codec.http.router.Router;
 
@@ -47,6 +45,12 @@ public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpReques
 
     } finally {
       if (resp == null) resp = new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
+
+      if (!resp.status().codeClass().equals(HttpStatusClass.SUCCESS)) {
+        LifetimeStats.FAILED_HTTP_REQUESTS.incrementAndGet();
+      } else {
+        LifetimeStats.SUCCESSFUL_HTTP_REQUESTS.incrementAndGet();
+      }
 
       ChannelFuture future = ctx.writeAndFlush(resp)
               .addListener(ChannelFutureListener.CLOSE);

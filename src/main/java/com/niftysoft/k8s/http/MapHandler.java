@@ -10,10 +10,8 @@ import java.util.List;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-public class
-
 /** @author kalexmills */
-MapHandler extends HttpEndpointHandler {
+public class MapHandler extends HttpEndpointHandler {
 
   private final VolatileByteStore vss;
 
@@ -51,7 +49,6 @@ MapHandler extends HttpEndpointHandler {
       return DefaultHttpHandler.respond404(req);
     }
 
-    // TODO: Don't use strings. Keep everything in ByteBuf for performance.
     ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
 
     for (String key : requestedKeys) {
@@ -61,7 +58,6 @@ MapHandler extends HttpEndpointHandler {
     }
     FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, buf);
 
-    resp.setStatus(HttpResponseStatus.OK);
     resp.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_OCTET_STREAM);
     resp.headers().set(HttpHeaderNames.CONTENT_LENGTH, resp.content().readableBytes());
     return resp;

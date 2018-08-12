@@ -1,5 +1,6 @@
 package com.niftysoft.k8s.client;
 
+import com.niftysoft.k8s.data.LifetimeStats;
 import com.niftysoft.k8s.data.VolatileByteStore;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,7 +34,10 @@ public class SyncInitiateHandler extends SimpleChannelInboundHandler {
     log.debug("Received remote store during client-initiated sync.");
 
     final VolatileByteStore otherStore = (VolatileByteStore) msg;
-    ctx.executor().execute(() -> myStore.mergeAllFresher(otherStore));
+    ctx.executor().execute(() -> {
+        myStore.mergeAllFresher(otherStore);
+        LifetimeStats.SUCCESSFUL_OUTGOING_SYNCS.incrementAndGet();
+    });
   }
 
   public void channelReadComplete(ChannelHandlerContext ctx) {
