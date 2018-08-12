@@ -1,5 +1,5 @@
 # Gossipcar
-### Kubernetes-native Gossip Sidecar
+### Kubernetes-native Volatile Datastore
 
 ![GitHub tag](https://img.shields.io/github/tag/niftysoft/k8s-gossipcar.svg)
 ![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -11,8 +11,7 @@
 
 
 
-A lightweight Kubernetes sidecar for performing slow-sync on an in-memory key-value
-store.
+A lightweight Kubernetes sidecar for syncing  an in-memory key-value store between pods.
 
 ## But Why?
 
