@@ -6,6 +6,7 @@ import com.niftysoft.k8s.data.VolatileByteStore;
 import com.niftysoft.k8s.http.HttpEndpointHandler;
 import com.niftysoft.k8s.http.HttpRouteHandler;
 import com.niftysoft.k8s.http.MapHandler;
+import com.niftysoft.k8s.http.StatsHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -45,7 +46,8 @@ public class GossipServer {
         new HttpRouteHandler(
             new Router<HttpEndpointHandler>()
                 .addRoute(HttpMethod.GET, "/map", mapHandler)
-                .addRoute(HttpMethod.PUT, "/map", mapHandler)),
+                .addRoute(HttpMethod.PUT, "/map", mapHandler)
+                .addRoute(HttpMethod.GET, "/stats", new StatsHandler())),
         new BadClientSilencer());
   }
 

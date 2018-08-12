@@ -1,4 +1,4 @@
-package com.niftysoft.k8s.data.stringstore;
+package com.niftysoft.k8s.data;
 
 import com.niftysoft.k8s.data.HashUtil;
 import com.niftysoft.k8s.data.VolatileByteStore;

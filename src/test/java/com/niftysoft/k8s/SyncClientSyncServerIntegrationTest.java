@@ -88,7 +88,7 @@ public class SyncClientSyncServerIntegrationTest {
         pumpMessagesRoundTrip();
         assertChannelsEmpty();
 
-        assertThat(serverStore.get("key")).isEqualTo("value2".getBytes());
+        assertThat(clientStore.get("key")).isEqualTo("value2".getBytes());
     }
 
     private void pumpMessagesRoundTrip() throws Exception {

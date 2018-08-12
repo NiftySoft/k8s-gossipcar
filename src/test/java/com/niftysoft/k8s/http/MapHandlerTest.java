@@ -28,7 +28,7 @@ public class MapHandlerTest {
 
     EmbeddedChannel chan = constructTestStack(vss);
 
-    FullHttpRequest req = constructRequest();
+    FullHttpRequest req = HttpTestUtil.constructRequest();
 
     req.setUri("/a?k=key");
     req.setMethod(HttpMethod.GET);
@@ -38,7 +38,7 @@ public class MapHandlerTest {
 
     assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
-    FullHttpResponse resp = pollHttpResponse(chan);
+    FullHttpResponse resp = HttpTestUtil.pollHttpResponse(chan);
 
     assertThat(resp.status().code()).isEqualTo(200);
     assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
@@ -59,7 +59,7 @@ public class MapHandlerTest {
 
     EmbeddedChannel chan = constructTestStack(vss);
 
-    FullHttpRequest req = constructRequest();
+    FullHttpRequest req = HttpTestUtil.constructRequest();
 
     req.setUri("/a?k=key1&k=key2&k=key3");
     req.setMethod(HttpMethod.GET);
@@ -69,7 +69,7 @@ public class MapHandlerTest {
 
     assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
-    FullHttpResponse resp = pollHttpResponse(chan);
+    FullHttpResponse resp = HttpTestUtil.pollHttpResponse(chan);
 
     assertThat(resp.status().code()).isEqualTo(200);
     assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
@@ -89,7 +89,7 @@ public class MapHandlerTest {
 
     EmbeddedChannel chan = constructTestStack(vss);
 
-    FullHttpRequest req = constructRequest();
+    FullHttpRequest req = HttpTestUtil.constructRequest();
 
     req.setUri("/a?k=key1&k=key2&k=key3");
     req.setMethod(HttpMethod.GET);
@@ -99,7 +99,7 @@ public class MapHandlerTest {
 
     assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
-    FullHttpResponse resp = pollHttpResponse(chan);
+    FullHttpResponse resp = HttpTestUtil.pollHttpResponse(chan);
 
     assertThat(resp.status().code()).isEqualTo(200);
     assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
@@ -116,7 +116,7 @@ public class MapHandlerTest {
   public void testMapHandlerAcceptsPutRequests() throws Exception {
     EmbeddedChannel chan = constructTestStack(vss);
 
-    FullHttpRequest req = constructRequest();
+    FullHttpRequest req = HttpTestUtil.constructRequest();
 
     req.setUri("/a?k=key");
     req.setMethod(HttpMethod.PUT);
@@ -127,7 +127,7 @@ public class MapHandlerTest {
 
     assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
-    FullHttpResponse resp = pollHttpResponse(chan);
+    FullHttpResponse resp = HttpTestUtil.pollHttpResponse(chan);
 
     assertThat(resp.status().code()).isEqualTo(201);
 
@@ -139,40 +139,19 @@ public class MapHandlerTest {
     EmbeddedChannel chan;
 
     chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.POST);
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.POST, "/a?k=key");
     chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.DELETE);
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.DELETE, "/a?k=key");
     chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.CONNECT);
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.CONNECT, "/a?k=key");
     chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.HEAD);
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.HEAD, "/a?k=key");
     chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.OPTIONS);
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.OPTIONS, "/a?k=key");
     chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.PATCH);
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.PATCH, "/a?k=key");
     chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.TRACE);
-  }
-
-  private void assertRequestTypeReturns404WithEmptyContent(EmbeddedChannel chan, HttpMethod method) {
-    FullHttpRequest req = constructRequest();
-
-    req.setUri("/a?k=key");
-    req.setMethod(method);
-    ByteBufUtil.writeUtf8(req.content(), "value");
-
-    chan.writeInbound(req);
-    chan.flush();
-
-    assertThat(chan.outboundMessages().size()).isEqualTo(1);
-
-    FullHttpResponse resp = pollHttpResponse(chan);
-
-    assertThat(resp.status().code()).isEqualTo(404);
-  }
-
-  public FullHttpResponse pollHttpResponse(EmbeddedChannel chan) {
-    return (FullHttpResponse) chan.outboundMessages().poll();
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.TRACE, "/a?k=key");
   }
 
   public EmbeddedChannel constructTestStack(VolatileByteStore vss) {
@@ -184,7 +163,4 @@ public class MapHandlerTest {
     return new EmbeddedChannel(new HttpRouteHandler(router));
   }
 
-  public FullHttpRequest constructRequest() {
-    return new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-  }
 }

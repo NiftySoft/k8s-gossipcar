@@ -14,7 +14,7 @@ import static org.junit.Assert.fail;
 public class GossipServerSyncInitiateTestIntegrationTest {
 
     @Test
-    public void testGossipServerRespondsToRemoteSyncInitiate() throws Exception {
+    public void testGossipServerPerformsSyncWithRemoteSyncInitiate() throws Exception {
         Config testConfig = constructTestConfig();
         testConfig.serviceDnsName = "example.com"; // Ensure the server doesn't end up talking to itself.
         GossipServer server = new GossipServer(testConfig);
