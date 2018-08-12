@@ -1,30 +1,40 @@
 package com.niftysoft.k8s.http;
 
+import com.niftysoft.k8s.data.LifetimeStats;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.router.Router;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.nio.charset.Charset;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 public class StatsHandlerTest {
 
   @Test
-  public void testMapHandlerAcceptsGetRequests() throws Exception {
+  public void testStatsHandlerRespondsToGetRequests() throws Exception {
     EmbeddedChannel chan = constructTestStack();
 
-    FullHttpRequest req = constructRequest();
+    FullHttpRequest req = HttpTestUtil.constructRequest();
+    req.setUri("/stats");
 
     chan.writeInbound(req);
     chan.flush();
 
     assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
-    FullHttpResponse resp = pollHttpResponse(chan);
+    FullHttpResponse resp = HttpTestUtil.pollHttpResponse(chan);
 
     assertThat(resp.status().code()).isEqualTo(200);
     assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
@@ -34,131 +44,89 @@ public class StatsHandlerTest {
     ByteBuf buf = resp.content();
     String content = new String(ByteBufUtil.getBytes(buf), Charset.forName("UTF-8"));
 
-    assertThat(content).isEqualTo("key=value\n");
+    assertThat(content).isNotEmpty();
   }
 
   @Test
-  public void testMapHandlerAcceptsMultipleKeysInGetRequests() throws Exception {
-    vss.put("key1", "value1".getBytes());
-    vss.put("key2", "value2".getBytes());
-    vss.put("key3", "value3".getBytes());
+  public void testStatsHandlerReturnsCurrentRepresentationofLifetimeStats() throws Exception {
+    EmbeddedChannel chan = constructTestStack();
 
-    EmbeddedChannel chan = constructTestStack(vss);
-
-    FullHttpRequest req = constructRequest();
-
-    req.setUri("/a?k=key1&k=key2&k=key3");
-    req.setMethod(HttpMethod.GET);
+    FullHttpRequest req = HttpTestUtil.constructRequest();
+    req.setUri("/stats");
 
     chan.writeInbound(req);
     chan.flush();
 
     assertThat(chan.outboundMessages().size()).isEqualTo(1);
 
-    FullHttpResponse resp = pollHttpResponse(chan);
+    FullHttpResponse resp = HttpTestUtil.pollHttpResponse(chan);
 
     assertThat(resp.status().code()).isEqualTo(200);
-    assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
-    assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE))
-        .isEqualTo("application/octet-stream");
 
     ByteBuf buf = resp.content();
     String content = new String(ByteBufUtil.getBytes(buf), Charset.forName("UTF-8"));
 
-    assertThat(content).isEqualTo("key1=value1\nkey2=value2\nkey3=value3\n");
+    assertThat(content).isNotEmpty();
+
+    String[] stats = content.split("\n");
+
+    Map<String, String> statsMap = new HashMap<>();
+    for (String stat : stats) {
+      String[] kv = stat.split("=");
+      assertThat(kv.length).isEqualTo(2);
+
+      statsMap.put(kv[0], kv[1]);
+    }
+
+    for (final Map.Entry<String, String> stat: statsMap.entrySet()) {
+      switch (stat.getKey()) {
+        case "upTimeSecs":
+          assertThat(Integer.valueOf(stat.getValue())).isNotNegative();
+          break;
+        case "upSince":
+          assertThatCode(() -> {
+            LocalDateTime date = LocalDateTime.parse(stat.getValue());
+            assertThat(date).isEqualToIgnoringMinutes(LifetimeStats.START_TIME);
+          }).doesNotThrowAnyException();
+          break;
+        case "nOutSyncs":
+          assertThat(stat.getValue()).isEqualTo("" + LifetimeStats.SUCCESSFUL_OUTGOING_SYNCS);
+          break;
+        case "nInSyncs":
+          assertThat(stat.getValue()).isEqualTo("" + LifetimeStats.SUCCESSFUL_INCOMING_SYNCS);
+          break;
+        case "nBadHttpReqs":
+          assertThat(stat.getValue()).isEqualTo("" + LifetimeStats.FAILED_HTTP_REQUESTS);
+          break;
+        case "nGoodHttpReqs":
+          // Subtract the succesful HTTP request represented by the stats request itself.
+          assertThat(stat.getValue()).isEqualTo("" + (LifetimeStats.SUCCESSFUL_HTTP_REQUESTS.intValue() - 1));
+          break;
+        default:
+          fail("Unexpected stat returned by StatsHandler " + stat.getKey());
+          break;
+      }
+    }
   }
 
   @Test
-  public void testMapHandlerAcceptsGetAndIgnoresMissingKeys() throws Exception {
-    vss.put("key1", "value1".getBytes());
-    vss.put("key3", "value3".getBytes());
-
-    EmbeddedChannel chan = constructTestStack(vss);
-
-    FullHttpRequest req = constructRequest();
-
-    req.setUri("/a?k=key1&k=key2&k=key3");
-    req.setMethod(HttpMethod.GET);
-
-    chan.writeInbound(req);
-    chan.flush();
-
-    assertThat(chan.outboundMessages().size()).isEqualTo(1);
-
-    FullHttpResponse resp = pollHttpResponse(chan);
-
-    assertThat(resp.status().code()).isEqualTo(200);
-    assertThat(resp.headers().contains(HttpHeaderNames.CONTENT_TYPE)).isTrue();
-    assertThat(resp.headers().get(HttpHeaderNames.CONTENT_TYPE))
-        .isEqualTo("application/octet-stream");
-
-    ByteBuf buf = resp.content();
-    String content = new String(ByteBufUtil.getBytes(buf), Charset.forName("UTF-8"));
-
-    assertThat(content).isEqualTo("key1=value1\nkey3=value3\n");
-  }
-
-  @Test
-  public void testMapHandlerAcceptsPutRequests() throws Exception {
-    EmbeddedChannel chan = constructTestStack(vss);
-
-    FullHttpRequest req = constructRequest();
-
-    req.setUri("/a?k=key");
-    req.setMethod(HttpMethod.PUT);
-    ByteBufUtil.writeUtf8(req.content(), "value");
-
-    chan.writeInbound(req);
-    chan.flush();
-
-    assertThat(chan.outboundMessages().size()).isEqualTo(1);
-
-    FullHttpResponse resp = pollHttpResponse(chan);
-
-    assertThat(resp.status().code()).isEqualTo(201);
-
-    assertThat(vss.get("key")).isEqualTo("value".getBytes());
-  }
-
-  @Test
-  public void testMapHandlerResponds404ToNonGetOrPutRequests() {
+  public void testMapHandlerResponds404ToNonGetRequests() {
     EmbeddedChannel chan;
 
-    chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.POST);
-    chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.DELETE);
-    chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.CONNECT);
-    chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.HEAD);
-    chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.OPTIONS);
-    chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.PATCH);
-    chan = constructTestStack(vss);
-    assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.TRACE);
-  }
-
-  private void assertRequestTypeReturns404WithEmptyContent(EmbeddedChannel chan, HttpMethod method) {
-    FullHttpRequest req = constructRequest();
-
-    req.setUri("/a?k=key");
-    req.setMethod(method);
-    ByteBufUtil.writeUtf8(req.content(), "value");
-
-    chan.writeInbound(req);
-    chan.flush();
-
-    assertThat(chan.outboundMessages().size()).isEqualTo(1);
-
-    FullHttpResponse resp = pollHttpResponse(chan);
-
-    assertThat(resp.status().code()).isEqualTo(404);
-  }
-
-  public FullHttpResponse pollHttpResponse(EmbeddedChannel chan) {
-    return (FullHttpResponse) chan.outboundMessages().poll();
+    chan = constructTestStack();
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.POST, "/stats");
+    chan = constructTestStack();
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.DELETE, "/stats");
+    chan = constructTestStack();
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.CONNECT, "/stats");
+    chan = constructTestStack();
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.HEAD, "/stats");
+    chan = constructTestStack();
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.OPTIONS, "/stats");
+    chan = constructTestStack();
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.PATCH, "/stats");
+    chan = constructTestStack();
+    HttpTestUtil.assertRequestTypeReturns404WithEmptyContent(chan, HttpMethod.TRACE, "/stats");
   }
 
   public EmbeddedChannel constructTestStack() {
@@ -169,7 +137,4 @@ public class StatsHandlerTest {
     return new EmbeddedChannel(new HttpRouteHandler(router));
   }
 
-  public FullHttpRequest constructRequest() {
-    return new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/stats");
-  }
 }

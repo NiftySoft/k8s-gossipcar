@@ -23,7 +23,7 @@ public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpReques
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+  public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
     FullHttpResponse resp = null;
 
     try {
