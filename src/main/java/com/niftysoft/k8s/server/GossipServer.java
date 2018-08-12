@@ -19,6 +19,9 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.router.Router;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Log4JLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,6 +53,7 @@ public class GossipServer {
   public boolean isStarted() { return isStarted; }
 
   public static void main(String[] args) throws Exception {
+    InternalLoggerFactory.setDefaultFactory(Log4JLoggerFactory.INSTANCE);
     new GossipServer(Config.fromEnvVars()).run();
   }
 
