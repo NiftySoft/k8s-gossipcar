@@ -4,7 +4,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.niftysoft.k8s.client.SyncInitiateTaskInitializer;
 import com.niftysoft.k8s.data.Config;
-import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
+import com.niftysoft.k8s.data.VolatileByteStore;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;

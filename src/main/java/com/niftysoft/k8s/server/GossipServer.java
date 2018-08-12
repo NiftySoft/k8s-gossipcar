@@ -2,7 +2,7 @@ package com.niftysoft.k8s.server;
 
 import com.niftysoft.k8s.client.SyncInitiateTask;
 import com.niftysoft.k8s.data.Config;
-import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
+import com.niftysoft.k8s.data.VolatileByteStore;
 import com.niftysoft.k8s.http.HttpEndpointHandler;
 import com.niftysoft.k8s.http.HttpRouteHandler;
 import com.niftysoft.k8s.http.MapHandler;
@@ -21,7 +21,6 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Log4JLoggerFactory;
-import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;

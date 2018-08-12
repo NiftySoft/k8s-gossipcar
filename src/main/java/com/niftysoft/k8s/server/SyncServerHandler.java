@@ -1,6 +1,6 @@
 package com.niftysoft.k8s.server;
 
-import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
+import com.niftysoft.k8s.data.VolatileByteStore;
 import io.netty.channel.*;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
