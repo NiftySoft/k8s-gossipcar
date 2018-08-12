@@ -33,3 +33,65 @@ overwrite stale data with fresher information from their peers.
 While the gossip protocol used is [guaranteed](http://disi.unitn.it/~montreso/ds/papers/montresor17.pdf) 
 to converge within a logarithmic number of rounds, if you require strict convergence SLAs
 a Gossip Sidecar may not be the right tool for your use-case.
+
+### How can I use it?
+
+Docker images are availble in `.tar` format in [releases](https://github.com/NiftySoft/k8s-gossipcar/releases). 
+To deploy on Kubernetes, a starting config is available in [k8s-deploy.yaml](https://github.com/NiftySoft/k8s-gossipcar/blob/master/k8s-deploy.yaml). 
+You will probably want to edit the spec to include your own application container, and possibly change 
+the `containerPort` to something oher than port 80.
+
+Once deployed, another process running on the same pod can access the container by sending HTTP requests
+to localhost:80. The following endpoints are available to interact with the key-value store.
+
+#### Associate Key with Value
+
+`PUT http://localhost:80/map?k=<key>`
+
+Response Headers:
+```
+Content-Length: 0
+```
+
+Response Body:
+```
+EMPTY
+```
+
+Response codes:
+ * `201 CREATED`    - if key did not previously exist in the repo
+ * `204 NO CONTENT` - if key existed previously, and was succesfully overwritten
+   
+ * `422 UNPROCESSABLE ENTITY` - if query parameter k was not present.
+   
+ * `500 INTERNAL ERROR` - something awful has occurred.
+
+
+#### Retrieve Value(s) associated with Key(s)
+
+`GET http://localhost:80/map?k=<key1>&k=<key2>...`
+
+Response Headers:
+```
+Content-Type: application/octect-stream
+Content-Length: [number of bytes in body]
+```
+
+Response Body:
+```
+<key1>=<value1>\n
+<key2>=<value2>\n
+...
+```
+
+Response codes:
+ * `200 OK` - if at least one key was present.
+   
+ * `404 NOT FOUND`            - If none of the requested keys were present.
+ * `422 UNPROCESSABLE ENTITY` - If no query parameter named "k" was present.
+
+Notes:
+ * Each key-value pair appears on a separate line, ended by a single `'\n'` character.
+ * Requested keys which are not present are not included in the response body.
+ * `<key#>=` will be formatted as a UTF-8 string.
+ * `<value#>` will be the octet stream associated with <key#>.
