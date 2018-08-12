@@ -1,7 +1,7 @@
 package com.niftysoft.k8s;
 
 import com.niftysoft.k8s.client.SyncInitiateTaskInitializer;
-import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
+import com.niftysoft.k8s.data.VolatileByteStore;
 import com.niftysoft.k8s.server.GossipServerInitializer;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Before;

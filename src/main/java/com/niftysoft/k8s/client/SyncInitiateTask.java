@@ -1,7 +1,7 @@
 package com.niftysoft.k8s.client;
 
 import com.niftysoft.k8s.data.Config;
-import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
+import com.niftysoft.k8s.data.VolatileByteStore;
 import com.niftysoft.k8s.util.PeerUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;

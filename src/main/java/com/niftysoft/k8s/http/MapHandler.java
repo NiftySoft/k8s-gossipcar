@@ -1,11 +1,10 @@
 package com.niftysoft.k8s.http;
 
-import com.niftysoft.k8s.data.stringstore.VolatileByteStore;
+import com.niftysoft.k8s.data.VolatileByteStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.handler.codec.http.*;
-import io.netty.util.AsciiString;
 
 import java.util.List;
 
@@ -15,13 +14,6 @@ public class
 
 /** @author kalexmills */
 MapHandler extends HttpEndpointHandler {
-
-  private static final AsciiString TEXT_PLAIN_UTF_8 =
-      HttpHeaderValues.TEXT_PLAIN
-          .concat("; ")
-          .concat(HttpHeaderValues.CHARSET)
-          .concat("=")
-          .concat("UTF-8");
 
   private final VolatileByteStore vss;
 
