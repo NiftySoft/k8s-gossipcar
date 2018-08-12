@@ -45,7 +45,7 @@ the `containerPort` to something other than port 80.
 Once deployed, another process running on the same pod can access the container by sending HTTP requests
 to localhost:80. The following endpoints are available to interact with the key-value store.
 
-### To Write to Gossipcar
+## How can I write to Gossipcar?
 
 PUT `http://localhost:80/map?k=<key>`
 
@@ -73,7 +73,7 @@ EMPTY
  * **500 INTERNAL ERROR** - something awful has occurred.
 
 
-### To Read from Gossipcar
+## How can I read from Gossipcar?
 
 GET `http://localhost:80/map?k=<key1>&k=<key2>...`
 
