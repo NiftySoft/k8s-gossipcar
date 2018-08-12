@@ -30,7 +30,7 @@ public class SyncServerHandler extends SimpleChannelInboundHandler<VolatileByteS
     log.debug("Writing store to remote peer.");
     ctx.executor().execute(() -> {
       myStore.mergeAllFresher(otherStore);
-      LifetimeStats.SUCCESSFUL_INCOMING_SYNCS.incrementAndGet();
+      LifetimeStats.SUCCESSFUL_INCOMING_SYNCS.increment();
     });
 
     ChannelFuture future = ctx.write(myStore);

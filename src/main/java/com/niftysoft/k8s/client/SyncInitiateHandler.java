@@ -36,7 +36,7 @@ public class SyncInitiateHandler extends SimpleChannelInboundHandler {
     final VolatileByteStore otherStore = (VolatileByteStore) msg;
     ctx.executor().execute(() -> {
         myStore.mergeAllFresher(otherStore);
-        LifetimeStats.SUCCESSFUL_OUTGOING_SYNCS.incrementAndGet();
+        LifetimeStats.SUCCESSFUL_OUTGOING_SYNCS.increment();
     });
   }
 

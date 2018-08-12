@@ -47,9 +47,9 @@ public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpReques
       if (resp == null) resp = new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
 
       if (!resp.status().codeClass().equals(HttpStatusClass.SUCCESS)) {
-        LifetimeStats.FAILED_HTTP_REQUESTS.incrementAndGet();
+        LifetimeStats.FAILED_HTTP_REQUESTS.increment();
       } else {
-        LifetimeStats.SUCCESSFUL_HTTP_REQUESTS.incrementAndGet();
+        LifetimeStats.SUCCESSFUL_HTTP_REQUESTS.increment();
       }
 
       ChannelFuture future = ctx.writeAndFlush(resp)
