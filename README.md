@@ -39,7 +39,7 @@ a Gossip Sidecar may not be the right tool for your use-case.
 Docker images are availble in `.tar` format in [releases](https://github.com/NiftySoft/k8s-gossipcar/releases). 
 To deploy on Kubernetes, a starting config is available in [k8s-deploy.yaml](https://github.com/NiftySoft/k8s-gossipcar/blob/master/k8s-deploy.yaml). 
 You will probably want to edit the spec to include your own application container, and possibly change 
-the `containerPort` to something oher than port 80.
+the `containerPort` to something other than port 80.
 
 Once deployed, another process running on the same pod can access the container by sending HTTP requests
 to localhost:80. The following endpoints are available to interact with the key-value store.
