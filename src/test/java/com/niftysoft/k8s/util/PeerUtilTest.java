@@ -8,10 +8,10 @@ import java.net.InetAddress;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PeerUtilTest {
-    InetAddress addr1;
-    InetAddress addr2;
-    InetAddress addr3;
-    InetAddress addr4;
+    private InetAddress addr1;
+    private InetAddress addr2;
+    private InetAddress addr3;
+    private InetAddress addr4;
 
     @Before
     public void before() throws Exception {

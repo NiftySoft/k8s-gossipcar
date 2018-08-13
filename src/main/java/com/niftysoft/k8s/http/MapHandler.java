@@ -29,7 +29,7 @@ public class MapHandler extends HttpEndpointHandler {
       case "PUT":
         return handlePut(req);
       default:
-        return DefaultHttpHandler.respond404(req);
+        return HttpResponseUtil.respond404(req);
     }
   }
 
@@ -46,7 +46,7 @@ public class MapHandler extends HttpEndpointHandler {
     }
 
     if (requestedKeys.isEmpty()) {
-      return DefaultHttpHandler.respond404(req);
+      return HttpResponseUtil.respond404(req);
     }
 
     ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
@@ -65,7 +65,7 @@ public class MapHandler extends HttpEndpointHandler {
 
   public FullHttpResponse handlePut(FullHttpRequest req) {
     if (queryParams.size() != 1) {
-      return DefaultHttpHandler.respond422(req);
+      return HttpResponseUtil.respond422(req);
     }
 
     String key = queryParams.get("k").get(0);

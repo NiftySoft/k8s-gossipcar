@@ -4,7 +4,10 @@ import com.niftysoft.k8s.data.VolatileByteStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.router.Router;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MapHandlerTest {
 
-  VolatileByteStore vss;
+  private VolatileByteStore vss;
 
   @Before
   public void before() {

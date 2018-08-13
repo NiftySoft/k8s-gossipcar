@@ -8,12 +8,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultHttpHandlerTest {
+public class HttpResponseUtilTest {
 
   @Test
   public void test404Handler() {
     FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-    FullHttpResponse resp = DefaultHttpHandler.respond404(req);
+    FullHttpResponse resp = HttpResponseUtil.respond404(req);
     assertThat(resp.status().code()).isEqualTo(404);
     assertThat(resp.protocolVersion()).isEqualTo(req.protocolVersion());
   }
@@ -21,7 +21,7 @@ public class DefaultHttpHandlerTest {
   @Test
   public void test422Handler() {
     FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-    FullHttpResponse resp = DefaultHttpHandler.respond422(req);
+    FullHttpResponse resp = HttpResponseUtil.respond422(req);
     assertThat(resp.status().code()).isEqualTo(422);
     assertThat(resp.protocolVersion()).isEqualTo(req.protocolVersion());
   }
