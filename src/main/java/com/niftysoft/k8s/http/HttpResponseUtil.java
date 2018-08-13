@@ -1,12 +1,11 @@
 package com.niftysoft.k8s.http;
 
-import com.niftysoft.k8s.data.LifetimeStats;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.EmptyByteBuf;
 import io.netty.handler.codec.http.*;
 
 /** @author kalexmills */
-public class DefaultHttpHandler {
+public class HttpResponseUtil {
 
   public static FullHttpResponse respond404(FullHttpRequest req) {
     return new DefaultFullHttpResponse(req.protocolVersion(), HttpResponseStatus.NOT_FOUND);

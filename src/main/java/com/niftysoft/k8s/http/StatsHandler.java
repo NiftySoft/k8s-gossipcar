@@ -18,7 +18,7 @@ public class StatsHandler extends HttpEndpointHandler {
     @Override
     public FullHttpResponse handleRequest(FullHttpRequest req) {
         if (!req.method().name().equals("GET")) {
-            return DefaultHttpHandler.respond404(req);
+            return HttpResponseUtil.respond404(req);
         }
 
         if (req.headers().contains(HttpHeaderNames.ACCEPT)) {
@@ -26,7 +26,7 @@ public class StatsHandler extends HttpEndpointHandler {
                 Arrays.asList(req.headers().get(HttpHeaderNames.ACCEPT).split("\\s*,\\s*"))
                     .stream().anyMatch((str) -> str.startsWith("text/plain"));
 
-            if (!canAcceptTextPlain) DefaultHttpHandler.respond406(req, PLAINTEXT_UTF_8);
+            if (!canAcceptTextPlain) HttpResponseUtil.respond406(req, PLAINTEXT_UTF_8);
         }
 
         if(req.headers().contains(HttpHeaderNames.ACCEPT_CHARSET)) {
@@ -34,7 +34,7 @@ public class StatsHandler extends HttpEndpointHandler {
                 Arrays.asList(req.headers().get(HttpHeaderNames.ACCEPT).split("\\s*,\\s*"))
                     .stream().anyMatch((str) -> str.toLowerCase().startsWith("utf-8*"));
 
-            if (!canAcceptUtf8) DefaultHttpHandler.respond406(req, PLAINTEXT_UTF_8);
+            if (!canAcceptUtf8) HttpResponseUtil.respond406(req, PLAINTEXT_UTF_8);
         }
 
         ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();

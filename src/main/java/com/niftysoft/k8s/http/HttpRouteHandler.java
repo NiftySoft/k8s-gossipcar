@@ -34,7 +34,7 @@ public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpReques
 
       RouteResult<HttpEndpointHandler> resolvedRoute = router.route(req.method(), req.uri());
       if (resolvedRoute == null) {
-        resp = DefaultHttpHandler.respond404(req);
+        resp = HttpResponseUtil.respond404(req);
         return;
       }
 
@@ -52,8 +52,7 @@ public class HttpRouteHandler extends SimpleChannelInboundHandler<FullHttpReques
         LifetimeStats.SUCCESSFUL_HTTP_REQUESTS.increment();
       }
 
-      ChannelFuture future = ctx.writeAndFlush(resp)
-              .addListener(ChannelFutureListener.CLOSE);
+      ctx.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE);
     }
   }
 }

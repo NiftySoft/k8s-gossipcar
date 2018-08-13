@@ -1,6 +1,5 @@
 package com.niftysoft.k8s.data;
 
-import com.niftysoft.k8s.data.VolatileByteStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Before;

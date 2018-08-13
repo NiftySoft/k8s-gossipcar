@@ -67,8 +67,6 @@ public class SyncInitiateHandlerTest {
     EmbeddedChannel channel = constructTestStack(store);
 
     assertThat(channel.outboundMessages().size()).isEqualTo(1);
-
-    ByteBuf buf = channel.readOutbound();
   }
 
   @Test
