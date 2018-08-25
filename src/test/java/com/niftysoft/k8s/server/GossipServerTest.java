@@ -2,6 +2,7 @@ package com.niftysoft.k8s.server;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.niftysoft.k8s.GossipServer;
 import com.niftysoft.k8s.client.SyncInitiateTaskInitializer;
 import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.VolatileByteStore;

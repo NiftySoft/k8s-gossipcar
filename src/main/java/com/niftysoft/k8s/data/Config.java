@@ -14,13 +14,18 @@ public final class Config {
   public String podIp = "127.0.0.1";
   public String podName = "gossipSidecar-0";
 
-  public static Config fromEnvVars() {
+  public static Config fromEnvVars(Config config) {
+    config.peerPort = parseIntIfPossible(System.getenv(PEER_PORT), config.peerPort);
+    config.clientPort = parseIntIfPossible(System.getenv(CLIENT_PORT), config.clientPort);
+    config.serviceDnsName = ifNotNull(System.getenv(SERVICE_DNS_NAME), config.serviceDnsName);
+    config.podIp = ifNotNull(System.getenv(MY_POD_IP), config.podIp);
+    config.podName = ifNotNull(System.getenv(MY_POD_NAME), config.podName);
+    return config;
+  }
+
+  public static Config load() {
     Config result = new Config();
-    result.peerPort = parseIntIfPossible(System.getenv(PEER_PORT), result.peerPort);
-    result.clientPort = parseIntIfPossible(System.getenv(CLIENT_PORT), result.clientPort);
-    result.serviceDnsName = ifNotNull(System.getenv(SERVICE_DNS_NAME), result.serviceDnsName);
-    result.podIp = ifNotNull(System.getenv(MY_POD_IP), result.podIp);
-    result.podName = ifNotNull(System.getenv(MY_POD_NAME), result.podName);
+    fromEnvVars(result);
     return result;
   }
 

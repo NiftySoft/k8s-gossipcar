@@ -1,4 +1,4 @@
-package com.niftysoft.k8s.server;
+package com.niftysoft.k8s;
 
 import com.niftysoft.k8s.client.SyncInitiateTask;
 import com.niftysoft.k8s.data.Config;
@@ -7,6 +7,7 @@ import com.niftysoft.k8s.http.HttpEndpointHandler;
 import com.niftysoft.k8s.http.HttpRouteHandler;
 import com.niftysoft.k8s.http.MapHandler;
 import com.niftysoft.k8s.http.StatsHandler;
+import com.niftysoft.k8s.server.SyncServerInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -55,7 +56,7 @@ public class GossipServer {
 
   public static void main(String[] args) throws Exception {
     InternalLoggerFactory.setDefaultFactory(Log4JLoggerFactory.INSTANCE);
-    new GossipServer(Config.fromEnvVars()).run();
+    new GossipServer(Config.load()).run();
   }
 
   public void run() throws Exception {
@@ -73,7 +74,7 @@ public class GossipServer {
       b.group(bossGroup, peerWorkerGroup)
           .channel(NioServerSocketChannel.class)
           .handler(new LoggingHandler("SYNC", LogLevel.INFO))
-          .childHandler(new GossipServerInitializer(myStore))
+          .childHandler(new SyncServerInitializer(myStore))
           .option(ChannelOption.SO_BACKLOG, 128)
           .childOption(ChannelOption.SO_KEEPALIVE, true);
 

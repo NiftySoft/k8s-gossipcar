@@ -4,10 +4,10 @@ import com.niftysoft.k8s.data.VolatileByteStore;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 
-public class GossipServerInitializer extends ChannelInitializer<Channel> {
+public class SyncServerInitializer extends ChannelInitializer<Channel> {
 
     private VolatileByteStore vss;
-    public GossipServerInitializer(VolatileByteStore vss) {
+    public SyncServerInitializer(VolatileByteStore vss) {
         this.vss = vss;
     }
 

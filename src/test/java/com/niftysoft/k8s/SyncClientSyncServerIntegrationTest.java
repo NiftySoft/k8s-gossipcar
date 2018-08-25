@@ -2,7 +2,7 @@ package com.niftysoft.k8s;
 
 import com.niftysoft.k8s.client.SyncInitiateTaskInitializer;
 import com.niftysoft.k8s.data.VolatileByteStore;
-import com.niftysoft.k8s.server.GossipServerInitializer;
+import com.niftysoft.k8s.server.SyncServerInitializer;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class SyncClientSyncServerIntegrationTest {
         clientChan =
                 new EmbeddedChannel(new SyncInitiateTaskInitializer(clientStore));
         serverChan =
-                new EmbeddedChannel(new GossipServerInitializer(serverStore));
+                new EmbeddedChannel(new SyncServerInitializer(serverStore));
     }
 
     @Test

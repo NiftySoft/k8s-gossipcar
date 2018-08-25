@@ -3,7 +3,6 @@ package com.niftysoft.k8s;
 import com.niftysoft.k8s.client.SyncInitiateTask;
 import com.niftysoft.k8s.data.Config;
 import com.niftysoft.k8s.data.VolatileByteStore;
-import com.niftysoft.k8s.server.GossipServer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.junit.Test;

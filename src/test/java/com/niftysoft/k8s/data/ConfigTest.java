@@ -27,7 +27,7 @@ public class ConfigTest {
     environmentVariables.set("MY_POD_IP", "10.4.4.2");
     environmentVariables.set("MY_POD_NAME", "hargleblarg");
 
-    Config config = Config.fromEnvVars();
+    Config config = Config.fromEnvVars(new Config());
 
     assertThat(config.peerPort).isEqualTo(1337);
     assertThat(config.clientPort).isEqualTo(8080);
@@ -38,7 +38,7 @@ public class ConfigTest {
 
   @Test
   public void testFromEnvVarsDefaults() {
-    Config config = Config.fromEnvVars();
+    Config config = Config.fromEnvVars(new Config());
 
     Config configWithDefaults = new Config();
 
