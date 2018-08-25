@@ -1,6 +1,8 @@
 # Gossipcar
 ### Kubernetes-native Volatile Datastore
 
+![Gossipcar Logo](http://niftysoft.github.io/assets/gossipcar-logo.svg)
+
 ![GitHub tag](https://img.shields.io/github/tag/niftysoft/k8s-gossipcar.svg)
 ![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg)
 
